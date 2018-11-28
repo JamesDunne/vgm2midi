@@ -1,6 +1,7 @@
-target := bsnes
+target := vgm2midi
 binary := application
 build := performance
+# lto := true
 openmp := true
 flags += -I. -I..
 
@@ -41,6 +42,10 @@ obj/emulator.o: emulator/emulator.cpp
 obj/audio.o: audio/audio.cpp
 obj/video.o: video/video.cpp
 obj/resource.o: resource/resource.cpp
+
+ifeq ($(target),vgm2midi)
+  cores := fc sfc
+endif
 
 ifeq ($(target),higan)
   cores := fc sfc ms md pce gb gba ws

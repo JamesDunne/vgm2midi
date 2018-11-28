@@ -169,6 +169,8 @@ auto MOS6502::instruction() -> void {
   op(0xf9, AbsoluteRead, fp(SBC), A, Y)
   op(0xfd, AbsoluteRead, fp(SBC), A, X)
   op(0xfe, AbsoluteModify, fp(INC), X)
+  // NSF support; needed to halt CPU on a bad instruction while APU continues to run:
+  op(0xff, Halt)
   }
 
   //unimplemented instruction

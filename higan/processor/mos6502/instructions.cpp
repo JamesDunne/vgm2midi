@@ -79,6 +79,12 @@ L idle();
   flag = 0;
 }
 
+auto MOS6502::instructionHalt() -> void {
+L idle();
+  // print("HLT\n");
+  PC--;
+}
+
 auto MOS6502::instructionImmediate(fp alu, uint8& data) -> void {
 L data = ALU(operand());
 }

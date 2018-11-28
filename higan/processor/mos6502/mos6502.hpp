@@ -60,6 +60,7 @@ struct MOS6502 {
   auto instructionBreak() -> void;
   auto instructionCallAbsolute() -> void;
   auto instructionClear(bool& flag) -> void;
+  auto instructionHalt() -> void;
   auto instructionImmediate(fp alu, uint8& data) -> void;
   auto instructionImplied(fp alu, uint8& data) -> void;
   auto instructionIndirectXRead(fp alu, uint8& data) -> void;

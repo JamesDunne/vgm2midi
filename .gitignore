@@ -1,3 +1,5 @@
+.DS_Store
 higan/profile/WonderSwan.sys/internal.ram
 higan/profile/WonderSwan Color.sys/internal.ram
 docs_build/
+higan/out/

@@ -119,6 +119,9 @@ struct PPU : Thread {
   uint8 oam[256];
 
   uint32 buffer[256 * 262];
+
+  // For NSF support:
+  bool disabled = false;
 };
 
 extern PPU ppu;

@@ -78,6 +78,11 @@ auto PPU::renderSprite() -> void {
 }
 
 auto PPU::renderScanline() -> void {
+  // For NSF support we don't need PPU to render anything:
+  if (disabled) {
+    return step(341), scanline();
+  }
+
   //Vblank
   if(io.ly >= 240 && io.ly <= vlines() - 2) return step(341), scanline();
 
