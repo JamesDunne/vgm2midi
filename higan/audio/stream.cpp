@@ -1,14 +1,12 @@
 auto Stream::reset(uint channels_, double inputFrequency, double outputFrequency) -> void {
-  this->inputFrequency = inputFrequency;
-  this->outputFrequency = outputFrequency;
-
   channels.reset();
   channels.resize(channels_);
 
   for(auto& channel : channels) {
     channel.filters.reset();
-    channel.resampler.reset(inputFrequency, outputFrequency);
   }
+
+  setFrequency(inputFrequency, outputFrequency);
 }
 
 auto Stream::setFrequency(double inputFrequency, maybe<double> outputFrequency) -> void {
