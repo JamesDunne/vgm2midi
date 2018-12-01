@@ -84,9 +84,9 @@ auto Program::audioSample(const double* samples, uint channels) -> void {
 	// For NSF:
 	assert(channels == 1);
 
-	// Write 16-bit sample:
-	auto x = (uint16_t)sclamp<16>(samples[0] * 32767.0);
-	wave.write({&x, 2});
+	// Write 32-bit sample:
+	auto x = (float)samples[0];
+	wave.write({&x, 4});
 	this->samples++;
 }
 auto Program::inputPoll(uint port, uint device, uint input) -> int16 {
@@ -197,19 +197,20 @@ auto Program::main() -> void {
 	print("bank switching: {0}\n", string_format{bankswitch_enabled});
 
 	Emulator::audio.setFrequency(48000);
-	Emulator::audio.setVolume(8.0);
+	Emulator::audio.setVolume(1.0);
 	Emulator::audio.setBalance(0.0);
 
 	nes = new Famicom::Interface;
-	print("nes->load()\n");
+	// print("nes->load()\n");
 	if (!nes->load()) {
 		print("NES failed load()\n");
 		return;
 	}
-	print("nes->power()\n");
+	// print("nes->power()\n");
 	nes->power();
 
 	auto& cpu = Famicom::cpu;
+	auto& apu = Famicom::apu;
 	auto& ppu = Famicom::ppu;
 	auto& system = Famicom::system;
 	auto& scheduler = Famicom::scheduler;
@@ -217,7 +218,7 @@ auto Program::main() -> void {
 	// Disable PPU rendering to save performance:
 	ppu.disabled = true;
 
-	print("Region: {0}\n", string_format{(int)system.region()});
+	// print("Region: {0}\n", string_format{(int)system.region()});
 
 	const int header_size = 0x2C;
 
@@ -226,13 +227,10 @@ auto Program::main() -> void {
 	wave.seek(header_size);
 	samples = 0;
 
+	initializing = true;
+
 	// Clear RAM to 00:
 	for (auto& data : cpu.ram) data = 0x00;
-	// Reset APU:
-	for (auto addr : range(0x4000, 0x14)) cpu.writeIO(addr, 0x00);
-	cpu.writeIO(0x4015, 0x00);
-	cpu.writeIO(0x4015, 0x0F);
-
 	// Push a return address on stack that points to a HLT instruction:
 	const int badop_addr = 0x8000;
 	cpu.ram[0x1FF] = (badop_addr - 1) >> 8;
@@ -241,24 +239,29 @@ auto Program::main() -> void {
 	// Start at INIT routine:
 	cpu.r.pc = addr_init;
 	// A = song index
-	cpu.r.a = 1;
+	cpu.r.a = 5;
 	// X = PAL or NTSC
 	cpu.r.x = 0;
 
-	initializing = true;
+	// Reset APU:
+	for (auto addr : range(0x4000, 0x4014)) {
+		apu.writeIO(addr, 0x00);
+	}
+	// clear channels:
+	apu.writeIO(0x4015, 0x00);
+	apu.writeIO(0x4015, 0x0F);
+	// 4-step mode:
+	apu.writeIO(0x4017, 0x40);
+
+	const long cpu_rate = cpu.rate();
+	const long ppu_step = (ppu.vlines() * 341L * ppu.rate() - 2) / (cpu_rate * 2);
+
 	do
 	{
-		// print("pc = {0}, a = {1}, x = {2}, y = {3}, s = {4}\n", string_format{
-		// 	hex(cpu.r.pc, 4),
-		// 	hex(cpu.r.a, 2),
-		// 	hex(cpu.r.x, 2),
-		// 	hex(cpu.r.y, 2),
-		// 	hex(cpu.r.s, 2)
-		// });
-
 		scheduler.enter(Famicom::Scheduler::Mode::SynchronizeMaster);
 	} while (cpu.r.pc != badop_addr);
 
+	// Start the PLAY routine:
 	cpu.ram[0x1FF] = (badop_addr - 1) >> 8;
 	cpu.ram[0x1FE] = (badop_addr - 1) & 0xFF;
 	cpu.r.s = 0xFD;
@@ -267,9 +270,12 @@ auto Program::main() -> void {
 	int cycles = 0;
 	int plays = 0;
 
-	const long cpu_rate = cpu.rate();
-	const long ppu_step = (ppu.vlines() * 341L * ppu.rate() - 2) / (cpu_rate * 2);
+	// const long play_sec = (60 * 3 + 10);
+	const long play_sec = 10;
+
+	print("initialized\n");
 	initializing = false;
+
 	do
 	{
 		ppu.step(ppu_step);
@@ -281,14 +287,14 @@ auto Program::main() -> void {
 			cpu.ram[0x100 + cpu.r.s--] = (badop_addr - 1) >> 8;
 			cpu.ram[0x100 + cpu.r.s--] = (badop_addr - 1) & 0xFF;
 		}
-	} while (plays < 60 * cpu_rate);
+	} while (plays < (1'000'000.0 / ntsc_play_speed) /*Hz*/ * play_sec /*sec*/);
 
 	// Write WAVE headers:
 	long chan_count = 1;
 	long rate = 48000;
-	long ds = samples * sizeof (short);
+	long ds = samples * sizeof (float);
 	long rs = header_size - 8 + ds;
-	int frame_size = chan_count * sizeof (short);
+	int frame_size = chan_count * sizeof (float);
 	long bps = rate * frame_size;
 
 	unsigned char header [header_size] =
@@ -299,14 +305,15 @@ auto Program::main() -> void {
 		'W','A','V','E',
 		'f','m','t',' ',
 		0x10,0,0,0,         // size of fmt chunk
-		1,0,                // uncompressed format
+		// 1,0,                // PCM format
+		3,0,				// float format
 		chan_count,0,       // channel count
 		rate,rate >> 8,     // sample rate
 		rate>>16,rate>>24,
 		bps,bps>>8,         // bytes per second
 		bps>>16,bps>>24,
 		frame_size,0,       // bytes per sample frame
-		16,0,               // bits per sample
+		32,0,               // bits per sample
 		'd','a','t','a',
 		ds,ds>>8,ds>>16,ds>>24// size of sample data
 		// ...              // sample data
