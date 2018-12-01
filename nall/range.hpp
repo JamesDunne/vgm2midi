@@ -36,16 +36,16 @@ struct range_t {
   int stride;
 };
 
-inline auto range(int size) {
-  return range_t{0, size, 1};
+inline auto range(int target) {
+  return range_t{0, target, 1};
 }
 
-inline auto range(int offset, int size) {
-  return range_t{offset, size, 1};
+inline auto range(int origin, int target) {
+  return range_t{origin, target, 1};
 }
 
-inline auto range(int offset, int size, int step) {
-  return range_t{offset, size, step};
+inline auto range(int origin, int target, int stride) {
+  return range_t{origin, target, stride};
 }
 
 }
