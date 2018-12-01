@@ -21,7 +21,7 @@ struct NSF : Board {
   }
 
   auto readPRG(uint addr) -> uint8 {
-    print("NSF read  0x{0}\n", string_format{hex(addr,4)});
+    print("NSF read  PRG 0x{0}\n", string_format{hex(addr,4)});
     if (addr >= 0xFFFA && addr <= 0xFFFD) {
       print("  NSF read vector\n");
       if (addr==0xFFFA) return(0x00);
@@ -38,10 +38,11 @@ struct NSF : Board {
   }
 
   auto writePRG(uint addr, uint8 data) -> void {
-    print("NSF write 0x{0} = 0x{1}\n", string_format{hex(addr,4), hex(data,2)});
+    print("NSF write PRG 0x{0} = 0x{1}\n", string_format{hex(addr,4), hex(data,2)});
   }
 
   auto readCHR(uint addr) -> uint8 {
+    print("NSF read  CHR 0x{0}\n", string_format{hex(addr,4)});
     if(addr & 0x2000) {
       if(settings.mirror == 0) addr = ((addr & 0x0800) >> 1) | (addr & 0x03ff);
       return ppu.readCIRAM(addr & 0x07ff);
@@ -51,6 +52,7 @@ struct NSF : Board {
   }
 
   auto writeCHR(uint addr, uint8 data) -> void {
+    print("NSF write CHR 0x{0} = 0x{1}\n", string_format{hex(addr,4), hex(data,2)});
     if(addr & 0x2000) {
       if(settings.mirror == 0) addr = ((addr & 0x0800) >> 1) | (addr & 0x03ff);
       return ppu.writeCIRAM(addr & 0x07ff, data);
