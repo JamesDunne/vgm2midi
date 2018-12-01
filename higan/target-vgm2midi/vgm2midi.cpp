@@ -230,7 +230,22 @@ auto Program::main() -> void {
 
 	// print("Region: {0}\n", string_format{(int)system.region()});
 
-	nsf->song_index = 0;
+	nsf->song_index = 1;
+
+	// Clear RAM to 00:
+	for (auto& data : cpu->ram) data = 0x00;
+
+	// Reset APU:
+	for (auto addr : range(0x4000, 0x4014)) {
+		apu->writeIO(addr, 0x00);
+	}
+	// clear channels:
+	apu->writeIO(0x4015, 0x00);
+	apu->writeIO(0x4015, 0x0F);
+	// 4-step mode:
+	apu->writeIO(0x4017, 0x40);
+
+	nsf->playing = true;
 
 	const int header_size = 0x2C;
 
@@ -242,19 +257,27 @@ auto Program::main() -> void {
 	const long cpu_rate = cpu->rate();
 	const long ppu_step = (ppu->vlines() * 341L * ppu->rate() - 2) / (cpu_rate * 2);
 
+	int plays = 0;
 	do
 	{
 #if BUILD_DEBUG
-        print("pc = {0}, a = {1}, x = {2}, y = {3}, s = {4}\n", string_format{
-             hex(cpu->r.pc, 4),
-             hex(cpu->r.a, 2),
-             hex(cpu->r.x, 2),
-             hex(cpu->r.y, 2),
-             hex(cpu->r.s, 2)
-        });
+		print("pc = {0}, a = {1}, x = {2}, y = {3}, s = {4}\n", string_format{
+		     hex(cpu->r.pc, 4),
+		     hex(cpu->r.a, 2),
+		     hex(cpu->r.x, 2),
+		     hex(cpu->r.y, 2),
+		     hex(cpu->r.s, 2)
+		});
 #endif
-		scheduler->enter(Famicom::Scheduler::Mode::SynchronizeMaster);
-	} while (nsf->playing && cpu->r.pc != 0x0000);
+		if (scheduler->enter(Famicom::Scheduler::Mode::SynchronizeMaster) == Emulator::Scheduler::Event::Frame) {
+			// Indicate NMI interrupt if requested by NSF player:
+			if ((nsf->nmiFlags & 1) || (nsf->nmiFlags & 2)) {
+				print("play\n");
+				cpu->nmiLine(true);
+				plays++;
+			}
+		}
+	} while (plays <= 60);
 
 	// Write WAVE headers:
 	long chan_count = 1;

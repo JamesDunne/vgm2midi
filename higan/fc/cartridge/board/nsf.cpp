@@ -6,7 +6,9 @@ NSF::NSF(Markup::Node& document) : Board(document) {
   settings.addr_init = document["board/nsf/init"].natural();
   settings.addr_play = document["board/nsf/play"].natural();
 
+#if BUILD_DEBUG
   print("init={0} play={1}\n", string_format{hex(settings.addr_init,4), hex(settings.addr_play,4)});
+#endif
 
   for (int x=0; x < 0x30+6; x++) {
     if (NSFROM[x] == 0x20) {
@@ -21,30 +23,36 @@ NSF::NSF(Markup::Node& document) : Board(document) {
   // for (int x=0; x < 0x30+6; x++) {
   //   print("{0}\n", string_format(hex(NSFROM[x],2)));
   // }
-
-  song_index = 0;
-  playing = false;
 }
 
 auto NSF::readPRG(uint addr) -> uint8 {
+#if BUILD_DEBUG
   print("NSF read  PRG 0x{0}\n", string_format{hex(addr,4)});
-  if (addr >= 0xFFFA && addr <= 0xFFFD) {
-    // NMI:
-    if (addr==0xFFFA) return(0x00);
-    else if(addr==0xFFFB) return(0x38);
-    // RESET:
-    else if(addr==0xFFFC) return(0x20);
-    else if(addr==0xFFFD) return(0x38);
-    // 0xFFFE is IRQ/BRK vector
+#endif
+  if (((nmiFlags&1) && song_reload) || (nmiFlags&2) || doreset) {
+    if (addr >= 0xFFFA && addr <= 0xFFFD) {
+      // NMI:
+      if (addr==0xFFFA) return(0x00);
+      else if(addr==0xFFFB) return(0x38);
+      // RESET:
+      else if(addr==0xFFFC) return(0x20);
+      else if(addr==0xFFFD) { doreset = 0; return(0x38); }
+      // 0xFFFE is IRQ/BRK vector
+    }
   }
   if (addr >= 0x3800 && addr <= 0x3835) {
     return NSFROM[addr-0x3800];
   }
   if (addr >= 0x3ff0 && addr <= 0x3fff) {
     if (addr == 0x3ff0) {
-      // song reset.
-      return 0;
+      // song reload:
+      print("read 3ff0\n");
+      uint8 x = song_reload;
+      song_reload = 0;
+      return x;
     } else if (addr == 0x3ff1) {
+      print("read 3ff1: return song_index\n");
+
       // Clear RAM to 00:
       for (auto& data : cpu.ram) data = 0x00;
 
@@ -61,6 +69,7 @@ auto NSF::readPRG(uint addr) -> uint8 {
       // Return current song index:
       return song_index;
     } else if (addr == 0x3ff3) {
+      print("read 3ff3\n");
       return system.region() == System::Region::PAL ? 1 : 0;
     }
 
@@ -71,8 +80,10 @@ auto NSF::readPRG(uint addr) -> uint8 {
 }
 
 auto NSF::readPRGforced(uint addr) -> bool {
-  if (addr >= 0xFFFA && addr <= 0xFFFD) {
-    return true;
+  if (((nmiFlags&1) && song_reload) || (nmiFlags&2) || doreset) {
+    if (addr >= 0xFFFA && addr <= 0xFFFD) {
+      return true;
+    }
   }
   if (addr >= 0x3800 && addr <= 0x3835) {
     return true;
@@ -80,21 +91,20 @@ auto NSF::readPRGforced(uint addr) -> bool {
   if (addr >= 0x3ff0 && addr <= 0x3fff) {
     return true;
   }
-  if(addr & 0x8000) return true;
+  if (addr & 0x8000) return true;
   return Board::readPRGforced(addr);
 }
 
 auto NSF::writePRG(uint addr, uint8 data) -> void {
+#if 1 //BUILD_DEBUG
   print("NSF write PRG 0x{0} = 0x{1}\n", string_format{hex(addr,4), hex(data,2)});
+#endif
 
   switch(addr)
   {
-    // case 0x3ff3: nmiFlags |= 1; break;
-    // case 0x3ff4: nmiFlags &= ~2;break;
-    // case 0x3ff5: nmiFlags |= 2; break;
-    case 0x3ff3: playing = true; cpu.nmiLine(true); break;
-    case 0x3ff4: playing = false; cpu.nmiLine(false); break;
-    case 0x3ff5: cpu.nmiLine(true); break;
+    case 0x3ff3: nmiFlags |= 1; break;
+    case 0x3ff4: nmiFlags &= ~2;break;
+    case 0x3ff5: nmiFlags |= 2; break;
   }
 }
 
@@ -104,7 +114,9 @@ auto NSF::writePRGforced(uint addr) -> bool {
 
 
 auto NSF::readCHR(uint addr) -> uint8 {
+#if BUILD_DEBUG
   print("NSF read  CHR 0x{0}\n", string_format{hex(addr,4)});
+#endif
   if(addr & 0x2000) {
     if(settings.mirror == 0) addr = ((addr & 0x0800) >> 1) | (addr & 0x03ff);
     return ppu.readCIRAM(addr & 0x07ff);
@@ -123,11 +135,13 @@ auto NSF::writeCHR(uint addr, uint8 data) -> void {
 }
 
 auto NSF::power() -> void {
-  prgBank = 0;
+  song_index = 0;
+  song_reload = 0xFF;
+  playing = false;
+  nmiFlags = 0;
+  doreset = 1;
 }
 
 auto NSF::serialize(serializer& s) -> void {
   Board::serialize(s);
-
-  s.integer(prgBank);
 }

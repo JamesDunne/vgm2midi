@@ -20,7 +20,10 @@ struct NSF : Board {
     uint16 addr_play;
   } settings;
 
-  uint4 prgBank;
+  uint8 nmiFlags;
+  uint8 doreset;
+
+  uint8 song_reload;
   uint8 song_index;
 
   bool playing;
