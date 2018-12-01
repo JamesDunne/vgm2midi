@@ -30,6 +30,7 @@ auto Cubic::reset(double inputFrequency, double outputFrequency, uint queueSize)
   fraction = 0.0;
   for(auto& sample : history) sample = 0.0;
   samples.resize(queueSize ? queueSize : this->outputFrequency * 0.02);  //default to 20ms max queue size
+  samples.fill(0);
 }
 
 auto Cubic::setInputFrequency(double inputFrequency) -> void {
