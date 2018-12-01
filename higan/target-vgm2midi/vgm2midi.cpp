@@ -8,7 +8,6 @@ struct Program : Emulator::Platform {
   auto main() -> void;
 
   Arguments arguments;
-  bool initializing;
 
   // Hard-coded manifest.bml for Famicom:
   string nes_sys_manifest = "system name:Famicom";
@@ -23,12 +22,12 @@ struct Program : Emulator::Platform {
   file_buffer wave;
   long samples;
 
-  Famicom::CPU& cpu = Famicom::cpu;
-  Famicom::APU& apu = Famicom::apu;
-  Famicom::PPU& ppu = Famicom::ppu;
-  Famicom::System& system = Famicom::system;
-  Famicom::Scheduler& scheduler = Famicom::scheduler;
-  Famicom::NSF& nsf = *((Famicom::NSF *)Famicom::cartridge.board);
+  Famicom::CPU* cpu;
+  Famicom::APU* apu;
+  Famicom::PPU* ppu;
+  Famicom::System* system;
+  Famicom::Scheduler* scheduler;
+  Famicom::NSF* nsf;
 
   // Emulator::Platform
   auto path(uint id) -> string override;
@@ -86,7 +85,7 @@ auto Program::videoRefresh(uint display, const uint32* data, uint pitch, uint wi
 	// print("videoRefresh\n");
 }
 auto Program::audioSample(const double* samples, uint channels) -> void {
-	if (initializing) return;
+	if (!nsf->playing) return;
 
 	// For NSF:
 	assert(channels == 1);
@@ -219,12 +218,19 @@ auto Program::main() -> void {
 	// print("nes->power()\n");
 	nes->power();
 
+	cpu = &Famicom::cpu;
+	apu = &Famicom::apu;
+	ppu = &Famicom::ppu;
+	system = &Famicom::system;
+	scheduler = &Famicom::scheduler;
+	nsf = ((Famicom::NSF *)Famicom::cartridge.board);
+
 	// Disable PPU rendering to save performance:
-	ppu.disabled = true;
+	ppu->disabled = true;
 
 	// print("Region: {0}\n", string_format{(int)system.region()});
 
-	nsf.song_index = 5;
+	nsf->song_index = 0;
 
 	const int header_size = 0x2C;
 
@@ -233,42 +239,22 @@ auto Program::main() -> void {
 	wave.seek(header_size);
 	samples = 0;
 
-	initializing = true;
+	const long cpu_rate = cpu->rate();
+	const long ppu_step = (ppu->vlines() * 341L * ppu->rate() - 2) / (cpu_rate * 2);
 
-	const long cpu_rate = cpu.rate();
-	const long ppu_step = (ppu.vlines() * 341L * ppu.rate() - 2) / (cpu_rate * 2);
-
-#if 1
 	do
 	{
+#if BUILD_DEBUG
         print("pc = {0}, a = {1}, x = {2}, y = {3}, s = {4}\n", string_format{
-             hex(cpu.r.pc, 4),
-             hex(cpu.r.a, 2),
-             hex(cpu.r.x, 2),
-             hex(cpu.r.y, 2),
-             hex(cpu.r.s, 2)
+             hex(cpu->r.pc, 4),
+             hex(cpu->r.a, 2),
+             hex(cpu->r.x, 2),
+             hex(cpu->r.y, 2),
+             hex(cpu->r.s, 2)
         });
-		scheduler.enter(Famicom::Scheduler::Mode::SynchronizeMaster);
-	} while (cpu.r.pc != 0x0000);
-#else
-	int plays = 0;
-
-	// const long play_sec = (60 * 3 + 10);
-	const long play_sec = 10;
-
-	for (int i = 0; i < 10; i++)
-	{
-		ppu.step(ppu_step);
-
-		// if (cpu.r.pc == badop_addr)
-		// {
-		// 	plays++;
-		// 	cpu.r.pc = addr_play;
-		// 	cpu.ram[0x100 + cpu.r.s--] = (badop_addr - 1) >> 8;
-		// 	cpu.ram[0x100 + cpu.r.s--] = (badop_addr - 1) & 0xFF;
-		// }
-	} // while (plays < (1'000'000.0 / ntsc_play_speed) /*Hz*/ * play_sec /*sec*/);
 #endif
+		scheduler->enter(Famicom::Scheduler::Mode::SynchronizeMaster);
+	} while (nsf->playing && cpu->r.pc != 0x0000);
 
 	// Write WAVE headers:
 	long chan_count = 1;

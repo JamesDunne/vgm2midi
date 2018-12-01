@@ -93,7 +93,7 @@ auto NSF::writePRG(uint addr, uint8 data) -> void {
     // case 0x3ff4: nmiFlags &= ~2;break;
     // case 0x3ff5: nmiFlags |= 2; break;
     case 0x3ff3: playing = true; cpu.nmiLine(true); break;
-    case 0x3ff4: cpu.nmiLine(false); break;
+    case 0x3ff4: playing = false; cpu.nmiLine(false); break;
     case 0x3ff5: cpu.nmiLine(true); break;
   }
 }
