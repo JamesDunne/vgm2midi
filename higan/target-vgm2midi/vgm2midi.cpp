@@ -109,11 +109,19 @@ auto Program::notify(string text) -> void {
 
 // Main:
 auto Program::main() -> void {
-	auto filename = arguments[0];
+	// NSF filename:
+	auto filename = arguments.take();
 	if (!filename) {
 		print("Missing filename\n");
 		return;
 	}
+	// Track number (0-based):
+	auto track_s = arguments.take();
+	if (!track_s) {
+		track_s = "0";
+	}
+	auto track = track_s.natural();
+
 	auto buf = file::open(filename, file::mode::read);
 	if (buf.reads(5) != "NESM\x1A") {
 		print("Missing NESM header for NSF!\n");
@@ -197,7 +205,7 @@ auto Program::main() -> void {
 	// if(_volatile)
 	// 	output.append("      volatile\n");
 
-	print(manifest, "\n");
+	// print(manifest, "\n");
 
 	print(song_name, "\n");
 	print(artist_name, "\n");
@@ -230,7 +238,7 @@ auto Program::main() -> void {
 
 	// print("Region: {0}\n", string_format{(int)system.region()});
 
-	nsf->song_index = 1;
+	nsf->song_index = track;
 
 	// Clear RAM to 00:
 	for (auto& data : cpu->ram) data = 0x00;
@@ -254,7 +262,8 @@ auto Program::main() -> void {
 	wave.seek(header_size);
 	samples = 0;
 
-	const long play_seconds = 3 * 60 + 15;
+	// const long play_seconds = 3 * 60 + 15;
+	const long play_seconds = 2 * 60 + 30;
 
 	int plays = 0;
 	do
