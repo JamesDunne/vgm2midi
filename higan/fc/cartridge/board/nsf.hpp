@@ -4,6 +4,9 @@ struct NSF : Board {
 
   auto readPRG(uint addr) -> uint8 override;
   auto writePRG(uint addr, uint8 data) -> void override;
+  auto readPRGforced(uint addr) -> bool override;
+  auto writePRGforced(uint addr) -> bool override;
+
   auto readCHR(uint addr) -> uint8 override;
   auto writeCHR(uint addr, uint8 data) -> void override;
 

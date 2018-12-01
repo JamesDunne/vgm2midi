@@ -13,22 +13,27 @@ Bus bus;
 
 auto Bus::read(uint16 addr) -> uint8 {
   uint8 data = cartridge.readPRG(addr);
-       if(addr <= 0x1fff) data = cpu.readRAM(addr);
-  else if(addr <= 0x3fff) data = ppu.readIO(addr);
-  else if(addr <= 0x4017) data = cpu.readIO(addr);
+  if (!cartridge.readPRGforced(addr)) {
+         if(addr <= 0x1fff) data = cpu.readRAM(addr);
+    else if(addr <= 0x3fff) data = ppu.readIO(addr);
+    else if(addr <= 0x4017) data = cpu.readIO(addr);
+  }
 
   if(cheat) {
     if(auto result = cheat.find(addr, data)) return result();
   }
 
+  print("Bus::read(0x{0}) -> 0x{1}\n", string_format{hex(addr, 4), hex(data, 2)});
   return data;
 }
 
 auto Bus::write(uint16 addr, uint8 data) -> void {
   cartridge.writePRG(addr, data);
-  if(addr <= 0x1fff) return cpu.writeRAM(addr, data);
-  if(addr <= 0x3fff) return ppu.writeIO(addr, data);
-  if(addr <= 0x4017) return cpu.writeIO(addr, data);
+  if (!cartridge.writePRGforced(addr)) {
+    if(addr <= 0x1fff) return cpu.writeRAM(addr, data);
+    if(addr <= 0x3fff) return ppu.writeIO(addr, data);
+    if(addr <= 0x4017) return cpu.writeIO(addr, data);
+  }
 }
 
 }

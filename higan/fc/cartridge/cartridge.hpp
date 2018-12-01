@@ -37,6 +37,9 @@ struct Cartridge : Thread {
   auto readPRG(uint addr) -> uint8;
   auto writePRG(uint addr, uint8 data) -> void;
 
+  auto readPRGforced(uint addr) -> bool;
+  auto writePRGforced(uint addr) -> bool;
+
   auto readCHR(uint addr) -> uint8;
   auto writeCHR(uint addr, uint8 data) -> void;
 

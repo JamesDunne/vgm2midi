@@ -26,6 +26,9 @@ struct Board {
   virtual auto readPRG(uint addr) -> uint8 = 0;
   virtual auto writePRG(uint addr, uint8 data) -> void = 0;
 
+  virtual auto readPRGforced(uint addr) -> bool { return false; };
+  virtual auto writePRGforced(uint addr) -> bool { return false; };
+
   virtual auto readCHR(uint addr) -> uint8;
   virtual auto writeCHR(uint addr, uint8 data) -> void;
 

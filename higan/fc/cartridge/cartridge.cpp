@@ -59,6 +59,14 @@ auto Cartridge::writePRG(uint addr, uint8 data) -> void {
   return board->writePRG(addr, data);
 }
 
+auto Cartridge::readPRGforced(uint addr) -> bool {
+  return board->readPRGforced(addr);
+}
+
+auto Cartridge::writePRGforced(uint addr) -> bool {
+  return board->writePRGforced(addr);
+}
+
 auto Cartridge::readCHR(uint addr) -> uint8 {
   return board->readCHR(addr);
 }

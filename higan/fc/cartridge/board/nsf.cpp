@@ -18,9 +18,9 @@ NSF::NSF(Markup::Node& document) : Board(document) {
     }
   }
 
-  for (int x=0; x < 0x30+6; x++) {
-    print("{0}\n", string_format(hex(NSFROM[x],2)));
-  }
+  // for (int x=0; x < 0x30+6; x++) {
+  //   print("{0}\n", string_format(hex(NSFROM[x],2)));
+  // }
 
   song_index = 0;
 }
@@ -28,23 +28,38 @@ NSF::NSF(Markup::Node& document) : Board(document) {
 auto NSF::readPRG(uint addr) -> uint8 {
   print("NSF read  PRG 0x{0}\n", string_format{hex(addr,4)});
   if (addr >= 0xFFFA && addr <= 0xFFFD) {
-    print("  NSF read vector\n");
+    // print("  NSF read vector\n");
     if (addr==0xFFFA) return(0x00);
     else if(addr==0xFFFB) return(0x38);
     else if(addr==0xFFFC) return(0x20);
     else if(addr==0xFFFD) return(0x38);
   }
   if (addr >= 0x3800 && addr <= 0x3835) {
-    print("  NSF read ROM\n");
+    // print("  NSF read ROM\n");
     return NSFROM[addr-0x3800];
   }
   if(addr & 0x8000) return prgrom.read(addr);
   return cpu.mdr();
 }
 
+auto NSF::readPRGforced(uint addr) -> bool {
+  if (addr >= 0xFFFA && addr <= 0xFFFD) {
+    return true;
+  }
+  if (addr >= 0x3800 && addr <= 0x3835) {
+    return true;
+  }
+  return Board::readPRGforced(addr);
+}
+
 auto NSF::writePRG(uint addr, uint8 data) -> void {
   print("NSF write PRG 0x{0} = 0x{1}\n", string_format{hex(addr,4), hex(data,2)});
 }
+
+auto NSF::writePRGforced(uint addr) -> bool {
+  return Board::writePRGforced(addr);
+}
+
 
 auto NSF::readCHR(uint addr) -> uint8 {
   print("NSF read  CHR 0x{0}\n", string_format{hex(addr,4)});
