@@ -167,10 +167,10 @@ struct APU : Thread {
   FrameCounter frame;
 
   uint8 enabledChannels;
-  int16 cartridgeSample;
+  double cartridgeSample;
 
-  int16 pulseDAC[32];
-  int16 dmcTriangleNoiseDAC[128][16][16];
+  double pulseDAC[32];
+  double dmcTriangleNoiseDAC[128][16][16];
 
   static const uint8 lengthCounterTable[32];
   static const uint16 dmcPeriodTableNTSC[16];

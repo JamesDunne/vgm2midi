@@ -14,9 +14,9 @@ APU apu;
 APU::APU() {
   for(uint amp : range(32)) {
     if(amp == 0) {
-      pulseDAC[amp] = 0;
+      pulseDAC[amp] = 0.0;
     } else {
-      pulseDAC[amp] = 16384.0 * 95.88 / (8128.0 / amp + 100.0);
+      pulseDAC[amp] = 95.88 / ((8128.0 / amp) + 100.0);
     }
   }
 
@@ -27,7 +27,7 @@ APU::APU() {
           dmcTriangleNoiseDAC[dmc_amp][triangle_amp][noise_amp] = 0;
         } else {
           dmcTriangleNoiseDAC[dmc_amp][triangle_amp][noise_amp]
-          = 16384.0 * 159.79 / (100.0 + 1.0 / (triangle_amp / 8227.0 + noise_amp / 12241.0 + dmc_amp / 22638.0));
+          = 159.79 / (100.0 + 1.0 / (triangle_amp / 8227.0 + noise_amp / 12241.0 + dmc_amp / 22638.0));
         }
       }
     }
@@ -49,11 +49,11 @@ auto APU::main() -> void {
 
   clockFrameCounterDivider();
 
-  int output = 0;
+  double output = 0.0;
   output += pulseDAC[pulse_output];
   output += dmcTriangleNoiseDAC[dmc_output][triangle_output][noise_output];
   output += cartridgeSample;
-  stream->sample(sclamp<16>(output) / 32768.0);
+  stream->sample(output);
 
   tick();
 }
@@ -68,7 +68,7 @@ auto APU::setIRQ() -> void {
 }
 
 auto APU::setSample(int16 sample) -> void {
-  cartridgeSample = sample;
+  cartridgeSample = sample / 32768.0;
 }
 
 auto APU::power(bool reset) -> void {
