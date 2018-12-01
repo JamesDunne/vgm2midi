@@ -4,8 +4,8 @@ struct NSF : Board {
     settings.mirror = document["board/mirror/mode"].text() == "vertical" ? 1 : 0;
 
     // Get the init and play addresses for the NSF (generated in manifest by vgm2midi.cpp):
-    settings.addr_init = document["board/addrinit"].natural();
-    settings.addr_play = document["board/addrplay"].natural();
+    settings.addr_init = document["board/nsf/init"].natural();
+    settings.addr_play = document["board/nsf/play"].natural();
 
     print("init={0} play={1}\n", string_format{hex(settings.addr_init,4), hex(settings.addr_play,4)});
 

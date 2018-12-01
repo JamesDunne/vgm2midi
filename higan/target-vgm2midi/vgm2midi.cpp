@@ -174,8 +174,9 @@ auto Program::main() -> void {
 
 	manifest.append("  board:  NSF\n");
 	manifest.append("    mirror mode=", "horizontal", "\n");
-	manifest.append("    addrinit: 0x", hex(addr_init,4), "\n");
-	manifest.append("    addrplay: 0x", hex(addr_play,4), "\n");
+	manifest.append("    nsf\n");
+	manifest.append("      init: 0x", hex(addr_init,4), "\n");
+	manifest.append("      play: 0x", hex(addr_play,4), "\n");
 
 	manifest.append("    memory\n");
 	manifest.append("      type: ", "ROM", "\n");
