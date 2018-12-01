@@ -251,19 +251,19 @@ auto Program::main() -> void {
 	const long cpu_rate = cpu.rate();
 	const long ppu_step = (ppu.vlines() * 341L * ppu.rate() - 2) / (cpu_rate * 2);
 
-#if 0
+#if 1
 	do
 	{
+        print("pc = {0}, a = {1}, x = {2}, y = {3}, s = {4}\n", string_format{
+             hex(cpu.r.pc, 4),
+             hex(cpu.r.a, 2),
+             hex(cpu.r.x, 2),
+             hex(cpu.r.y, 2),
+             hex(cpu.r.s, 2)
+        });
 		scheduler.enter(Famicom::Scheduler::Mode::SynchronizeMaster);
-	} while (cpu.r.pc != badop_addr);
-
-	// Start the PLAY routine:
-	cpu.ram[0x1FF] = (badop_addr - 1) >> 8;
-	cpu.ram[0x1FE] = (badop_addr - 1) & 0xFF;
-	cpu.r.s = 0xFD;
-	cpu.r.pc = addr_play;
-#endif
-
+	} while (cpu.r.pc != 0x0000);
+#else
 	int plays = 0;
 
 	// const long play_sec = (60 * 3 + 10);
@@ -281,7 +281,8 @@ auto Program::main() -> void {
 		// 	cpu.ram[0x100 + cpu.r.s--] = (badop_addr - 1) & 0xFF;
 		// }
 	} // while (plays < (1'000'000.0 / ntsc_play_speed) /*Hz*/ * play_sec /*sec*/);
-
+#endif
+	
 	// Write WAVE headers:
 	long chan_count = 1;
 	long rate = 48000;
