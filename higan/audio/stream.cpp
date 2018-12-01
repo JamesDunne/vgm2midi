@@ -4,6 +4,7 @@ auto Stream::reset(uint channels_, double inputFrequency, double outputFrequency
 
   for(auto& channel : channels) {
     channel.filters.reset();
+    channel.filterDCOffset = {false,0,0};
   }
 
   setFrequency(inputFrequency, outputFrequency);
@@ -58,12 +59,30 @@ auto Stream::addFilter(Filter::Order order, Filter::Type type, double cutoffFreq
   }
 }
 
+auto FilterDCOffset::filter(double sample) -> double {
+  if (!enabled) return sample;
+
+  // Remove DC offset:
+  otm = 0.999 * otm + sample - itm;
+  itm = sample;
+  return otm;
+}
+
+auto Stream::enableFilterDCOffset(bool enabled) -> void {
+  for(auto& channel : channels) {
+    channel.filterDCOffset = {enabled,0,0};
+  }
+}
+
 auto Stream::pending() const -> bool {
   return channels && channels[0].resampler.pending();
 }
 
 auto Stream::read(double samples[]) -> uint {
-  for(uint c : range(channels.size())) samples[c] = channels[c].resampler.read();
+  for(uint c : range(channels.size())) {
+    double sample = channels[c].resampler.read();
+    samples[c] = channels[c].filterDCOffset.filter(sample);
+  }
   return channels.size();
 }
 

@@ -45,12 +45,22 @@ struct Filter {
   DSP::IIR::Biquad biquad;    //second-order
 };
 
+struct FilterDCOffset {
+  bool enabled;
+  double itm;
+  double otm;
+
+  auto filter(double sample) -> double;
+};
+
 struct Stream {
   auto reset(uint channels, double inputFrequency, double outputFrequency) -> void;
 
   auto setFrequency(double inputFrequency, maybe<double> outputFrequency = nothing) -> void;
 
   auto addFilter(Filter::Order order, Filter::Type type, double cutoffFrequency, uint passes = 1) -> void;
+
+  auto enableFilterDCOffset(bool enabled = true) -> void;
 
   auto pending() const -> bool;
   auto read(double samples[]) -> uint;
@@ -66,6 +76,7 @@ private:
     vector<Filter> filters;
     vector<DSP::IIR::Biquad> nyquist;
     DSP::Resampler::Cubic resampler;
+    FilterDCOffset filterDCOffset;
   };
   vector<Channel> channels;
   double inputFrequency;
