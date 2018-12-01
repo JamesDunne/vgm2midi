@@ -172,8 +172,10 @@ auto Program::main() -> void {
 	manifest.append("  label:  ", song_name, "\n");
 	manifest.append("  name:   ", filename, "\n");
 
-	manifest.append("  board:  NES-NROM-256\n");
+	manifest.append("  board:  NSF\n");
 	manifest.append("    mirror mode=", "horizontal", "\n");
+	manifest.append("    addrinit: 0x", hex(addr_init,4), "\n");
+	manifest.append("    addrplay: 0x", hex(addr_play,4), "\n");
 
 	manifest.append("    memory\n");
 	manifest.append("      type: ", "ROM", "\n");
@@ -188,7 +190,7 @@ auto Program::main() -> void {
 	// if(_volatile)
 	// 	output.append("      volatile\n");
 
-	// print(manifest, "\n");
+	print(manifest, "\n");
 
 	print(song_name, "\n");
 	print(artist_name, "\n");
@@ -256,6 +258,7 @@ auto Program::main() -> void {
 	const long cpu_rate = cpu.rate();
 	const long ppu_step = (ppu.vlines() * 341L * ppu.rate() - 2) / (cpu_rate * 2);
 
+#if 0
 	do
 	{
 		scheduler.enter(Famicom::Scheduler::Mode::SynchronizeMaster);
@@ -266,6 +269,7 @@ auto Program::main() -> void {
 	cpu.ram[0x1FE] = (badop_addr - 1) & 0xFF;
 	cpu.r.s = 0xFD;
 	cpu.r.pc = addr_play;
+#endif
 
 	int cycles = 0;
 	int plays = 0;

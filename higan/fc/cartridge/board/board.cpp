@@ -18,6 +18,7 @@
 #include "nes-txrom.cpp"
 #include "nes-uxrom.cpp"
 #include "sunsoft-5b.cpp"
+#include "nsf.cpp"
 
 Board::Board(Markup::Node& document) {
   cartridge.board = this;
@@ -135,6 +136,7 @@ auto Board::load(string manifest) -> Board* {
   cartridge.information.title = document["game/label"].text();
 
   string type = document["game/board"].text();
+  print("type: {0}\n", string_format{type});
 
   if(type == "BANDAI-FCG"  ) return new BandaiFCG(document);
 
@@ -218,6 +220,8 @@ auto Board::load(string manifest) -> Board* {
   if(type == "NES-UOROM"   ) return new NES_UxROM(document);
 
   if(type == "SUNSOFT-5B"  ) return new Sunsoft5B(document);
+
+  if(type == "NSF"         ) return new NSF(document);
 
   return nullptr;
 }
