@@ -23,6 +23,8 @@ struct NSF : Board {
   uint4 prgBank;
   uint8 song_index;
 
+  bool playing;
+
   /*
   00:8000:8D F4 3F  STA $3FF4 = #$00
   00:8003:A2 FF     LDX #$FF

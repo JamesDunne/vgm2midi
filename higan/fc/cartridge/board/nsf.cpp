@@ -23,6 +23,7 @@ NSF::NSF(Markup::Node& document) : Board(document) {
   // }
 
   song_index = 0;
+  playing = false;
 }
 
 auto NSF::readPRG(uint addr) -> uint8 {
@@ -85,6 +86,16 @@ auto NSF::readPRGforced(uint addr) -> bool {
 
 auto NSF::writePRG(uint addr, uint8 data) -> void {
   print("NSF write PRG 0x{0} = 0x{1}\n", string_format{hex(addr,4), hex(data,2)});
+
+  switch(addr)
+  {
+    // case 0x3ff3: nmiFlags |= 1; break;
+    // case 0x3ff4: nmiFlags &= ~2;break;
+    // case 0x3ff5: nmiFlags |= 2; break;
+    case 0x3ff3: playing = true; cpu.nmiLine(true); break;
+    case 0x3ff4: cpu.nmiLine(false); break;
+    case 0x3ff5: cpu.nmiLine(true); break;
+  }
 }
 
 auto NSF::writePRGforced(uint addr) -> bool {
