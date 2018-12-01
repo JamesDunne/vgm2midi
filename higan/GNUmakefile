@@ -1,6 +1,7 @@
 target := vgm2midi
 binary := application
-build := performance
+#build := performance
+build := debug
 # lto := true
 openmp := true
 flags += -I. -I..
