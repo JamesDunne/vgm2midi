@@ -217,11 +217,14 @@ auto Program::main() -> void {
 	auto& ppu = Famicom::ppu;
 	auto& system = Famicom::system;
 	auto& scheduler = Famicom::scheduler;
+	auto& nsf = *((Famicom::NSF *)Famicom::cartridge.board);
 
 	// Disable PPU rendering to save performance:
 	ppu.disabled = true;
 
 	// print("Region: {0}\n", string_format{(int)system.region()});
+
+	nsf.song_index = 5;
 
 	const int header_size = 0x2C;
 
@@ -234,20 +237,6 @@ auto Program::main() -> void {
 
 	// Clear RAM to 00:
 	for (auto& data : cpu.ram) data = 0x00;
-
-#if 0
-	// Push a return address on stack that points to a HLT instruction:
-	const int badop_addr = 0x8000;
-	cpu.ram[0x1FF] = (badop_addr - 1) >> 8;
-	cpu.ram[0x1FE] = (badop_addr - 1) & 0xFF;
-	cpu.r.s = 0xFD;
-	// Start at INIT routine:
-	cpu.r.pc = addr_init;
-	// A = song index
-	cpu.r.a = 5;
-	// X = PAL or NTSC
-	cpu.r.x = 0;
-#endif
 
 	// Reset APU:
 	for (auto addr : range(0x4000, 0x4014)) {
@@ -275,14 +264,10 @@ auto Program::main() -> void {
 	cpu.r.pc = addr_play;
 #endif
 
-	int cycles = 0;
 	int plays = 0;
 
 	// const long play_sec = (60 * 3 + 10);
 	const long play_sec = 10;
-
-	print("initialized\n");
-	initializing = false;
 
 	for (int i = 0; i < 10; i++)
 	{
