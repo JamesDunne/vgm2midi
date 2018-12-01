@@ -234,6 +234,8 @@ auto Program::main() -> void {
 
 	// Clear RAM to 00:
 	for (auto& data : cpu.ram) data = 0x00;
+
+#if 0
 	// Push a return address on stack that points to a HLT instruction:
 	const int badop_addr = 0x8000;
 	cpu.ram[0x1FF] = (badop_addr - 1) >> 8;
@@ -245,6 +247,7 @@ auto Program::main() -> void {
 	cpu.r.a = 5;
 	// X = PAL or NTSC
 	cpu.r.x = 0;
+#endif
 
 	// Reset APU:
 	for (auto addr : range(0x4000, 0x4014)) {
@@ -281,18 +284,18 @@ auto Program::main() -> void {
 	print("initialized\n");
 	initializing = false;
 
-	do
+	for (int i = 0; i < 10; i++)
 	{
 		ppu.step(ppu_step);
 
-		if (cpu.r.pc == badop_addr)
-		{
-			plays++;
-			cpu.r.pc = addr_play;
-			cpu.ram[0x100 + cpu.r.s--] = (badop_addr - 1) >> 8;
-			cpu.ram[0x100 + cpu.r.s--] = (badop_addr - 1) & 0xFF;
-		}
-	} while (plays < (1'000'000.0 / ntsc_play_speed) /*Hz*/ * play_sec /*sec*/);
+		// if (cpu.r.pc == badop_addr)
+		// {
+		// 	plays++;
+		// 	cpu.r.pc = addr_play;
+		// 	cpu.ram[0x100 + cpu.r.s--] = (badop_addr - 1) >> 8;
+		// 	cpu.ram[0x100 + cpu.r.s--] = (badop_addr - 1) & 0xFF;
+		// }
+	} // while (plays < (1'000'000.0 / ntsc_play_speed) /*Hz*/ * play_sec /*sec*/);
 
 	// Write WAVE headers:
 	long chan_count = 1;
