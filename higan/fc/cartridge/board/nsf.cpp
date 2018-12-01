@@ -28,15 +28,42 @@ NSF::NSF(Markup::Node& document) : Board(document) {
 auto NSF::readPRG(uint addr) -> uint8 {
   print("NSF read  PRG 0x{0}\n", string_format{hex(addr,4)});
   if (addr >= 0xFFFA && addr <= 0xFFFD) {
-    // print("  NSF read vector\n");
+    // NMI:
     if (addr==0xFFFA) return(0x00);
     else if(addr==0xFFFB) return(0x38);
+    // RESET:
     else if(addr==0xFFFC) return(0x20);
     else if(addr==0xFFFD) return(0x38);
+    // 0xFFFE is IRQ/BRK vector
   }
   if (addr >= 0x3800 && addr <= 0x3835) {
-    // print("  NSF read ROM\n");
     return NSFROM[addr-0x3800];
+  }
+  if (addr >= 0x3ff0 && addr <= 0x3fff) {
+    if (addr == 0x3ff0) {
+      // song reset.
+      return 0;
+    } else if (addr == 0x3ff1) {
+      // Clear RAM to 00:
+      for (auto& data : cpu.ram) data = 0x00;
+
+      // Reset APU:
+      for (auto addr : range(0x4000, 0x4014)) {
+        apu.writeIO(addr, 0x00);
+      }
+      // clear channels:
+      apu.writeIO(0x4015, 0x00);
+      apu.writeIO(0x4015, 0x0F);
+      // 4-step mode:
+      apu.writeIO(0x4017, 0x40);
+
+      // Return current song index:
+      return song_index;
+    } else if (addr == 0x3ff3) {
+      return system.region() == System::Region::PAL ? 1 : 0;
+    }
+
+    return 0;
   }
   if(addr & 0x8000) return prgrom.read(addr);
   return cpu.mdr();
@@ -49,6 +76,10 @@ auto NSF::readPRGforced(uint addr) -> bool {
   if (addr >= 0x3800 && addr <= 0x3835) {
     return true;
   }
+  if (addr >= 0x3ff0 && addr <= 0x3fff) {
+    return true;
+  }
+  if(addr & 0x8000) return true;
   return Board::readPRGforced(addr);
 }
 

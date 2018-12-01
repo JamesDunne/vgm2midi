@@ -23,6 +23,13 @@ struct Program : Emulator::Platform {
   file_buffer wave;
   long samples;
 
+  Famicom::CPU& cpu = Famicom::cpu;
+  Famicom::APU& apu = Famicom::apu;
+  Famicom::PPU& ppu = Famicom::ppu;
+  Famicom::System& system = Famicom::system;
+  Famicom::Scheduler& scheduler = Famicom::scheduler;
+  Famicom::NSF& nsf = *((Famicom::NSF *)Famicom::cartridge.board);
+
   // Emulator::Platform
   auto path(uint id) -> string override;
   auto open(uint id, string name, vfs::file::mode mode, bool required) -> vfs::shared::file override;
@@ -212,13 +219,6 @@ auto Program::main() -> void {
 	// print("nes->power()\n");
 	nes->power();
 
-	auto& cpu = Famicom::cpu;
-	auto& apu = Famicom::apu;
-	auto& ppu = Famicom::ppu;
-	auto& system = Famicom::system;
-	auto& scheduler = Famicom::scheduler;
-	auto& nsf = *((Famicom::NSF *)Famicom::cartridge.board);
-
 	// Disable PPU rendering to save performance:
 	ppu.disabled = true;
 
@@ -234,19 +234,6 @@ auto Program::main() -> void {
 	samples = 0;
 
 	initializing = true;
-
-	// Clear RAM to 00:
-	for (auto& data : cpu.ram) data = 0x00;
-
-	// Reset APU:
-	for (auto addr : range(0x4000, 0x4014)) {
-		apu.writeIO(addr, 0x00);
-	}
-	// clear channels:
-	apu.writeIO(0x4015, 0x00);
-	apu.writeIO(0x4015, 0x0F);
-	// 4-step mode:
-	apu.writeIO(0x4017, 0x40);
 
 	const long cpu_rate = cpu.rate();
 	const long ppu_step = (ppu.vlines() * 341L * ppu.rate() - 2) / (cpu_rate * 2);
@@ -282,7 +269,7 @@ auto Program::main() -> void {
 		// }
 	} // while (plays < (1'000'000.0 / ntsc_play_speed) /*Hz*/ * play_sec /*sec*/);
 #endif
-	
+
 	// Write WAVE headers:
 	long chan_count = 1;
 	long rate = 48000;
