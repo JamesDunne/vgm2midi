@@ -46,3 +46,5 @@ struct Board {
   Memory chrrom;
   Memory chrram;
 };
+
+#include "nsf.hpp"
