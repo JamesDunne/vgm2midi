@@ -46,12 +46,12 @@ auto NSF::readPRG(uint addr) -> uint8 {
   if (addr >= 0x3ff0 && addr <= 0x3fff) {
     if (addr == 0x3ff0) {
       // song reload:
-      print("read 3ff0\n");
+      // print("read 3ff0\n");
       uint8 x = song_reload;
       song_reload = 0;
       return x;
     } else if (addr == 0x3ff1) {
-      print("read 3ff1: return song_index\n");
+      // print("read 3ff1: return song_index\n");
 
       // Clear RAM to 00:
       for (auto& data : cpu.ram) data = 0x00;
@@ -69,7 +69,7 @@ auto NSF::readPRG(uint addr) -> uint8 {
       // Return current song index:
       return song_index;
     } else if (addr == 0x3ff3) {
-      print("read 3ff3\n");
+      // print("read 3ff3\n");
       return system.region() == System::Region::PAL ? 1 : 0;
     }
 
@@ -96,7 +96,7 @@ auto NSF::readPRGforced(uint addr) -> bool {
 }
 
 auto NSF::writePRG(uint addr, uint8 data) -> void {
-#if 1 //BUILD_DEBUG
+#if BUILD_DEBUG
   print("NSF write PRG 0x{0} = 0x{1}\n", string_format{hex(addr,4), hex(data,2)});
 #endif
 
@@ -113,6 +113,7 @@ auto NSF::writePRGforced(uint addr) -> bool {
 }
 
 
+// Appears to be unused by NSF player.
 auto NSF::readCHR(uint addr) -> uint8 {
 #if BUILD_DEBUG
   print("NSF read  CHR 0x{0}\n", string_format{hex(addr,4)});
@@ -125,8 +126,11 @@ auto NSF::readCHR(uint addr) -> uint8 {
   return chrrom.read(addr);
 }
 
+// Appears to be unused by NSF player.
 auto NSF::writeCHR(uint addr, uint8 data) -> void {
+#if BUILD_DEBUG
   print("NSF write CHR 0x{0} = 0x{1}\n", string_format{hex(addr,4), hex(data,2)});
+#endif
   if(addr & 0x2000) {
     if(settings.mirror == 0) addr = ((addr & 0x0800) >> 1) | (addr & 0x03ff);
     return ppu.writeCIRAM(addr & 0x07ff, data);
@@ -137,11 +141,17 @@ auto NSF::writeCHR(uint addr, uint8 data) -> void {
 auto NSF::power() -> void {
   song_index = 0;
   song_reload = 0xFF;
-  playing = false;
   nmiFlags = 0;
   doreset = 1;
+  playing = false;
 }
 
 auto NSF::serialize(serializer& s) -> void {
   Board::serialize(s);
+
+  s.integer(song_reload);
+  s.integer(song_index);
+  s.integer(nmiFlags);
+  s.integer(doreset);
+  s.boolean(playing);
 }

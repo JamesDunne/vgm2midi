@@ -254,8 +254,7 @@ auto Program::main() -> void {
 	wave.seek(header_size);
 	samples = 0;
 
-	const long cpu_rate = cpu->rate();
-	const long ppu_step = (ppu->vlines() * 341L * ppu->rate() - 2) / (cpu_rate * 2);
+	const long play_seconds = 3 * 60 + 15;
 
 	int plays = 0;
 	do
@@ -272,12 +271,12 @@ auto Program::main() -> void {
 		if (scheduler->enter(Famicom::Scheduler::Mode::SynchronizeMaster) == Emulator::Scheduler::Event::Frame) {
 			// Indicate NMI interrupt if requested by NSF player:
 			if ((nsf->nmiFlags & 1) || (nsf->nmiFlags & 2)) {
-				print("play\n");
+				// print("play\n");
 				cpu->nmiLine(true);
 				plays++;
 			}
 		}
-	} while (plays <= 60);
+	} while (plays <= 60 * play_seconds);
 
 	// Write WAVE headers:
 	long chan_count = 1;
