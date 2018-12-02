@@ -6,7 +6,7 @@ NSF::NSF(Markup::Node& document) : Board(document) {
   settings.addr_init = document["board/nsf/init"].natural();
   settings.addr_play = document["board/nsf/play"].natural();
 
-#if BUILD_DEBUG
+#if DEBUG_NSF
   print("init={0} play={1}\n", string_format{hex(settings.addr_init,4), hex(settings.addr_play,4)});
 #endif
 
@@ -26,7 +26,7 @@ NSF::NSF(Markup::Node& document) : Board(document) {
 }
 
 auto NSF::readPRG(uint addr) -> uint8 {
-#if BUILD_DEBUG
+#if DEBUG_NSF
   print("NSF read  PRG 0x{0}\n", string_format{hex(addr,4)});
 #endif
   if (((nmiFlags&1) && song_reload) || (nmiFlags&2) || doreset) {
@@ -96,7 +96,7 @@ auto NSF::readPRGforced(uint addr) -> bool {
 }
 
 auto NSF::writePRG(uint addr, uint8 data) -> void {
-#if BUILD_DEBUG
+#if DEBUG_NSF
   print("NSF write PRG 0x{0} = 0x{1}\n", string_format{hex(addr,4), hex(data,2)});
 #endif
 
@@ -115,7 +115,7 @@ auto NSF::writePRGforced(uint addr) -> bool {
 
 // Appears to be unused by NSF player.
 auto NSF::readCHR(uint addr) -> uint8 {
-#if BUILD_DEBUG
+#if DEBUG_NSF
   print("NSF read  CHR 0x{0}\n", string_format{hex(addr,4)});
 #endif
   if(addr & 0x2000) {
@@ -128,7 +128,7 @@ auto NSF::readCHR(uint addr) -> uint8 {
 
 // Appears to be unused by NSF player.
 auto NSF::writeCHR(uint addr, uint8 data) -> void {
-#if BUILD_DEBUG
+#if DEBUG_NSF
   print("NSF write CHR 0x{0} = 0x{1}\n", string_format{hex(addr,4), hex(data,2)});
 #endif
   if(addr & 0x2000) {

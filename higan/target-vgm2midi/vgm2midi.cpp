@@ -268,7 +268,7 @@ auto Program::main() -> void {
 	int plays = 0;
 	do
 	{
-#if BUILD_DEBUG
+#if DEBUG_NSF
 		print("pc = {0}, a = {1}, x = {2}, y = {3}, s = {4}\n", string_format{
 		     hex(cpu->r.pc, 4),
 		     hex(cpu->r.a, 2),

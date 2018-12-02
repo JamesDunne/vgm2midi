@@ -23,7 +23,7 @@ auto Bus::read(uint16 addr) -> uint8 {
     if(auto result = cheat.find(addr, data)) return result();
   }
 
-#if BUILD_DEBUG
+#if DEBUG_NSF
   print("Bus::read(0x{0}) -> 0x{1}\n", string_format{hex(addr, 4), hex(data, 2)});
 #endif
 
