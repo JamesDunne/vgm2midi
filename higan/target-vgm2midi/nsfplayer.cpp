@@ -133,10 +133,6 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	// We've read the entire header now:
 	assert(buf.offset() == 0x80);
 
-	// Build a PRGROM vector:
-	prgrom.resize(0x8000);
-	prgrom.fill(0xFF);
-
 	// Determine if bank switching is used:
 	auto bankswitch_enabled = false;
 	for (auto bs : bankswitch_init) {
@@ -147,17 +143,34 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	}
 
 	if (!bankswitch_enabled) {
+		// Build a PRGROM vector:
+		prgrom.resize(0x8000);
+		prgrom.fill(0xFF);
+
 		// No bank switching, just load data straight into PRGROM at addr_load:
 		// print("addr_load: {0}\n", string_format{hex(addr_load - 0x8000, 4)});
 		buf.read({prgrom.data<uint8_t>() + (addr_load - 0x8000), buf.size() - buf.offset()});
-		// for (auto b: prgrom) {
-		// 	print("{0} ", string_format{hex(b, 2)});
-		// }
-		// print("\n");
 	} else {
-		// TODO: bank switching!
-		print("TODO: bank switching!\n");
+		// Skip padding:
+		auto skip = (addr_load & 0x0FFF);
+		// print("skip 0x{0}\n", string_format{hex(skip, 4)});
+		buf.seek(skip, file_buffer::index::relative);
+
+		auto size = buf.size() - buf.offset();
+		// Build a PRGROM vector:
+		prgrom.resize(size);
+		prgrom.fill(0xFF);
+
+		// Load banks:
+		// print("read 0x{0}\n", string_format{hex(size, 4)});
+		buf.read({prgrom.data<uint8_t>(), size});
+		assert(buf.offset() == buf.size());
 	}
+
+	// for (auto b: prgrom) {
+	// 	print("{0} ", string_format{hex(b, 2)});
+	// }
+	// print("\n");
 
 	buf.close();
 
@@ -173,6 +186,10 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	manifest.append("    nsf\n");
 	manifest.append("      init: 0x", hex(addr_init,4), "\n");
 	manifest.append("      play: 0x", hex(addr_play,4), "\n");
+	manifest.append("      bank\n");
+	for (auto i : range(8)) {
+		manifest.append("        map src=0x{0} dest=0x{1}\n", string_format{hex(i+8,1), hex(bankswitch_init[i],2)});
+	}
 
 	manifest.append("    memory\n");
 	manifest.append("      type: ", "ROM", "\n");
@@ -187,7 +204,7 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	// if(_volatile)
 	// 	output.append("      volatile\n");
 
-	// print(manifest, "\n");
+	print(manifest, "\n");
 
 	print(song_name, "\n");
 	print(artist_name, "\n");

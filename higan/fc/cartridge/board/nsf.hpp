@@ -26,6 +26,8 @@ struct NSF : Board {
   uint8 song_reload;
   uint8 song_index;
 
+  bool bankSwitchEnabled;
+  uint8 bank[0x10];
   bool playing;
 
   /*

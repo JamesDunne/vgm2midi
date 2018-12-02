@@ -10,6 +10,29 @@ NSF::NSF(Markup::Node& document) : Board(document) {
   print("init={0} play={1}\n", string_format{hex(settings.addr_init,4), hex(settings.addr_play,4)});
 #endif
 
+  bankSwitchEnabled = false;
+  for (auto i : range(16)) bank[i] = 0;
+
+  if (auto bd = document["board/nsf/bank"]) {
+    for (auto map : bd.find("map")) {
+      auto src = map["src"].natural();
+      auto dest = map["dest"].natural();
+      bank[src] = dest;
+      // print("bank[{0}] = {1}\n", string_format{hex(src,2), hex(dest,2)});
+      if (dest != 0) {
+        bankSwitchEnabled = true;
+      }
+    }
+  }
+
+#if DEBUG_NSF
+  if (bankSwitchEnabled) {
+    for (auto i : range(16)) {
+      print("bank[{0}] = {1}\n", string_format{hex(i,2), hex(bank[i],2)});
+    }
+  }
+#endif
+
   for (int x=0; x < 0x30+6; x++) {
     if (NSFROM[x] == 0x20) {
       NSFROM[x+1] = settings.addr_init & 0xFF;
@@ -75,7 +98,19 @@ auto NSF::readPRG(uint addr) -> uint8 {
 
     return 0;
   }
-  if(addr & 0x8000) return prgrom.read(addr);
+  if (addr & 0x8000) {
+    if (bankSwitchEnabled) {
+      uint8 bankno = (addr >> 12);
+      uint16 offs = (addr & 0x0FFF);
+      uint16 prgaddr = (bank[bankno] << 12) | offs;
+      uint8 data = prgrom.read(prgaddr);
+      // print("NSF read  PRG {0} (mapped {1}) -> {2}\n", string_format{hex(addr,4), hex(prgaddr,4), hex(data,2)});
+      // print("bank[{0}] = {1}, offs = {2}\n", string_format{hex(bankno,1), hex(bank[bankno],2), hex(offs,4)});
+      return data;
+    } else {
+      return prgrom.read(addr);
+    }
+  }
   return cpu.mdr();
 }
 
@@ -102,9 +137,24 @@ auto NSF::writePRG(uint addr, uint8 data) -> void {
 
   switch(addr)
   {
-    case 0x3ff3: nmiFlags |= 1; break;
-    case 0x3ff4: nmiFlags &= ~2;break;
-    case 0x3ff5: nmiFlags |= 2; break;
+    case 0x3ff3: nmiFlags |=  1; break;
+    case 0x3ff4: nmiFlags &= ~2; break;
+    case 0x3ff5: nmiFlags |=  2; break;
+
+    case 0x5FF6:
+    case 0x5FF7: // if(!(NSFHeader.SoundChip&4)) return;
+    case 0x5FF8:
+    case 0x5FF9:
+    case 0x5FFA:
+    case 0x5FFB:
+    case 0x5FFC:
+    case 0x5FFD:
+    case 0x5FFE:
+    case 0x5FFF:
+      if (!bankSwitchEnabled) break;
+      // print("bank[{0}] := {1}\n", string_format{hex(addr&0xF,1), hex(data,2)});
+      bank[addr & 0x000F] = data;
+      break;
   }
 }
 
@@ -154,4 +204,6 @@ auto NSF::serialize(serializer& s) -> void {
   s.integer(nmiFlags);
   s.integer(doreset);
   s.boolean(playing);
+  s.boolean(bankSwitchEnabled);
+  for (auto i : range(16)) s.integer(bank[i]);
 }

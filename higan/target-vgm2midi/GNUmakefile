@@ -1,6 +1,8 @@
 name := vgm2midi
 
-objects += ui-vgm2midi ui-resource
+# flags += -DDEBUG_NSF
+
+objects += ui-vgm2midi
 objects := $(objects:%=obj/%.o)
 
 obj/ui-vgm2midi.o: $(ui)/vgm2midi.cpp
@@ -9,7 +11,7 @@ obj/ui-vgm2midi.o: $(ui)/vgm2midi.cpp
 # obj/ui-settings.o: $(ui)/settings/settings.cpp
 # obj/ui-tools.o: $(ui)/tools/tools.cpp
 # obj/ui-presentation.o: $(ui)/presentation/presentation.cpp
-obj/ui-resource.o: $(ui)/resource/resource.cpp
+# obj/ui-resource.o: $(ui)/resource/resource.cpp
 
 all: $(objects)
 	$(info Linking out/$(name) ...)
