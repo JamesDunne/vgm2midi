@@ -232,6 +232,10 @@ auto DSP::write(uint8 addr, uint8 data) -> void {
   }
 }
 
+auto DSP::setRegister(uint8 reg, uint8 data) -> void {
+  REG(reg) = data;
+}
+
 /* initialization */
 
 auto DSP::load() -> bool {

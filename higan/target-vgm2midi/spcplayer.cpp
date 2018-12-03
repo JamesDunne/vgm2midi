@@ -9,6 +9,7 @@ struct SPCPlayer : Emulator::Platform {
 	vector<uint8_t> spcregs;
 	vector<uint8_t> dspram;
 	vector<uint8_t> dspregs;
+	vector<uint8_t> iplrom;
 
 	// WAVE file writing out:
 	file_buffer wave;
@@ -74,7 +75,7 @@ auto SPCPlayer::open(uint id, string name, vfs::file::mode mode, bool required) 
 }
 auto SPCPlayer::load(uint id, string name, string type, vector<string> options) -> Emulator::Platform::Load {
 	// print("load({0}, {1})\n", string_format{id, name});
-	return {id, "NTSC-U"};
+	return {id, "NTSC"};
 }
 auto SPCPlayer::videoRefresh(uint display, const uint32* data, uint pitch, uint width, uint height) -> void {
 	// print("videoRefresh\n");
@@ -126,14 +127,18 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	buf.seek(0x100);
 
 	// An SPC dump is just a dump of SPC ram at the time of song init:
-	dspram.resize(65536);
-	dspram.fill(0xff);
+	dspram.resize(0x10000);
+	dspram.fill(0x00);
 	buf.read(dspram);
 
 	// And the SPC700 DSP registers:
-	dspregs.resize(128);
+	dspregs.resize(0x80);
 	dspregs.fill(0x00);
 	buf.read(dspregs);
+
+	buf.seek(64, file_buffer::index::relative);
+	iplrom.resize(64);
+	buf.read(iplrom);
 
 	auto song_name = "";
 
@@ -192,6 +197,17 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	// print("snes->power()\n");
 	snes->power();
 
+	// Load DSP RAM and regs:
+	for (auto n : range(dspram.size())) {
+		dsp->apuram[n] = dspram[n];
+	}
+	for (auto n : range(dspregs.size())) {
+		dsp->setRegister(n, dspregs[n]);
+	}
+	for (auto n : range(64)) {
+		smp->iplrom[n] = iplrom[n];
+	}
+
 	// Load SPC regs:
 	smp->r.pc.byte.l = spcregs[0];
 	smp->r.pc.byte.h = spcregs[1];
@@ -200,14 +216,6 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	smp->r.ya.byte.h = spcregs[4];
 	smp->r.p = spcregs[5];
 	smp->r.s = spcregs[6];
-
-	// Load DSP RAM and regs:
-	for (auto n : range(dspram.size())) {
-		dsp->apuram[n] = dspram[n];
-	}
-	for (auto n : range(dspregs.size())) {
-		dsp->write(n, dspregs[n]);
-	}
 
 	// print("Region: {0}\n", string_format{(int)system.region()});
 

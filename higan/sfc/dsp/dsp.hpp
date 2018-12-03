@@ -19,6 +19,8 @@ struct DSP : Thread {
   //serialization.cpp
   auto serialize(serializer&) -> void;
 
+  auto setRegister(uint8 reg, uint8 data) -> void;
+
 private:
   enum GlobalRegister : uint {
     MVOLL = 0x0c, MVOLR = 0x1c,
