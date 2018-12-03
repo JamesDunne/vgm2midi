@@ -24,11 +24,11 @@ auto SMP::step(uint clocks) -> void {
   synchronize(dsp);
 
   #if defined(DEBUGGER)
-  synchronize(cpu);
+  if (!cpu.disabled) synchronize(cpu);
   #else
   //forcefully sync S-SMP to S-CPU in case chips are not communicating
   //sync if S-SMP is more than 1ms ahead of S-CPU
-  if(clock() - cpu.clock() > Thread::Second / 1'000) synchronize(cpu);
+  if (!cpu.disabled) if(clock() - cpu.clock() > Thread::Second / 1'000) synchronize(cpu);
   #endif
 }
 

@@ -9,16 +9,18 @@ Cheat cheat;
 #include "serialization.cpp"
 
 auto System::run() -> void {
-  if(scheduler.enter() == Scheduler::Event::Frame) ppu.refresh();
+  if(scheduler.enter() == Scheduler::Event::Frame) if (!ppu.disabled) ppu.refresh();
 }
 
 auto System::runToSave() -> void {
-  scheduler.synchronize(cpu);
+  if (!cpu.disabled) scheduler.synchronize(cpu);
   scheduler.synchronize(smp);
-  scheduler.synchronize(ppu);
+  if (!ppu.disabled) scheduler.synchronize(ppu);
   scheduler.synchronize(dsp);
-  for(auto coprocessor : cpu.coprocessors) scheduler.synchronize(*coprocessor);
-  for(auto peripheral : cpu.peripherals) scheduler.synchronize(*peripheral);
+  if (!cpu.disabled) {
+    for(auto coprocessor : cpu.coprocessors) scheduler.synchronize(*coprocessor);
+    for(auto peripheral : cpu.peripherals) scheduler.synchronize(*peripheral);
+  }
 }
 
 auto System::load(Emulator::Interface* interface) -> bool {
@@ -27,9 +29,9 @@ auto System::load(Emulator::Interface* interface) -> bool {
   hacks.fastDSP = configuration.hacks.dspFast.enable;
 
   bus.reset();
-  if(!cpu.load()) return false;
+  if (!cpu.disabled) if(!cpu.load()) return false;
   if(!smp.load()) return false;
-  if(!ppu.load()) return false;
+  if (!ppu.disabled) if(!ppu.load()) return false;
   if(!dsp.load()) return false;
   if(!cartridge.load()) return false;
 
@@ -59,7 +61,7 @@ auto System::save() -> void {
 auto System::unload() -> void {
   if(!loaded()) return;
 
-  cpu.peripherals.reset();
+  if (!cpu.disabled) cpu.peripherals.reset();
   controllerPort1.unload();
   controllerPort2.unload();
   expansionPort.unload();
@@ -91,10 +93,10 @@ auto System::power(bool reset) -> void {
   random.entropy(Random::Entropy::Low);
 
   scheduler.reset();
-  cpu.power(reset);
+  if (!cpu.disabled) cpu.power(reset);
   smp.power(reset);
   dsp.power(reset);
-  ppu.power(reset);
+  if (!ppu.disabled) ppu.power(reset);
 
   if(cartridge.has.ICD) icd.power();
   if(cartridge.has.MCC) mcc.power();
@@ -115,20 +117,24 @@ auto System::power(bool reset) -> void {
   if(cartridge.has.SufamiTurboSlotA) sufamiturboA.power();
   if(cartridge.has.SufamiTurboSlotB) sufamiturboB.power();
 
-  if(cartridge.has.ICD) cpu.coprocessors.append(&icd);
-  if(cartridge.has.Event) cpu.coprocessors.append(&event);
-  if(cartridge.has.SA1) cpu.coprocessors.append(&sa1);
-  if(cartridge.has.SuperFX) cpu.coprocessors.append(&superfx);
-  if(cartridge.has.ARMDSP) cpu.coprocessors.append(&armdsp);
-  if(cartridge.has.HitachiDSP) cpu.coprocessors.append(&hitachidsp);
-  if(cartridge.has.NECDSP) cpu.coprocessors.append(&necdsp);
-  if(cartridge.has.EpsonRTC) cpu.coprocessors.append(&epsonrtc);
-  if(cartridge.has.SharpRTC) cpu.coprocessors.append(&sharprtc);
-  if(cartridge.has.SPC7110) cpu.coprocessors.append(&spc7110);
-  if(cartridge.has.MSU1) cpu.coprocessors.append(&msu1);
-  if(cartridge.has.BSMemorySlot) cpu.coprocessors.append(&bsmemory);
+  if (!cpu.disabled) {
+    if(cartridge.has.ICD) cpu.coprocessors.append(&icd);
+    if(cartridge.has.Event) cpu.coprocessors.append(&event);
+    if(cartridge.has.SA1) cpu.coprocessors.append(&sa1);
+    if(cartridge.has.SuperFX) cpu.coprocessors.append(&superfx);
+    if(cartridge.has.ARMDSP) cpu.coprocessors.append(&armdsp);
+    if(cartridge.has.HitachiDSP) cpu.coprocessors.append(&hitachidsp);
+    if(cartridge.has.NECDSP) cpu.coprocessors.append(&necdsp);
+    if(cartridge.has.EpsonRTC) cpu.coprocessors.append(&epsonrtc);
+    if(cartridge.has.SharpRTC) cpu.coprocessors.append(&sharprtc);
+    if(cartridge.has.SPC7110) cpu.coprocessors.append(&spc7110);
+    if(cartridge.has.MSU1) cpu.coprocessors.append(&msu1);
+    if(cartridge.has.BSMemorySlot) cpu.coprocessors.append(&bsmemory);
 
-  scheduler.primary(cpu);
+    scheduler.primary(cpu);
+  } else {
+    scheduler.primary(smp);
+  }
 
   controllerPort1.power(ID::Port::Controller1);
   controllerPort2.power(ID::Port::Controller2);

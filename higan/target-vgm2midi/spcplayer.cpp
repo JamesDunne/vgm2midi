@@ -4,12 +4,10 @@
 struct SPCPlayer : Emulator::Platform {
 	auto run(string filename, Arguments arguments) -> void;
 
-	// Hard-coded manifest.bml for Famicom:
-	string nes_sys_manifest = "system name:Famicom";
-
-	// Generated manfiest and supporting data for NSF file:
+	// Generated manfiest and supporting data for SPC file:
 	string manifest;
-	vector<uint8_t> prgrom;
+	vector<uint8_t> dspram;
+	vector<uint8_t> dspregs;
 
 	// WAVE file writing out:
 	file_buffer wave;
@@ -18,6 +16,7 @@ struct SPCPlayer : Emulator::Platform {
 	SuperFamicom::Interface* snes;
 
 	SuperFamicom::CPU* cpu;
+	SuperFamicom::PPU* ppu;
 	SuperFamicom::SMP* smp;
 	SuperFamicom::DSP* dsp;
 	SuperFamicom::System* system;
@@ -42,22 +41,27 @@ auto SPCPlayer::open(uint id, string name, vfs::file::mode mode, bool required) 
 	// print("platform::open({0}, {1})\n", string_format{id, name});
 
 	if (id == 0) {  //System
-		// print("platform::open  id = System\n");
-		if (name == "manifest.bml" && mode == vfs::file::mode::read) {
-			// print("platform::open  manifest.bml from memory\n");
-			return vfs::memory::file::open(nes_sys_manifest.data(), nes_sys_manifest.size());
+		if (name == "boards.bml" && mode == vfs::file::mode::read) {
+			return vfs::memory::file::open(Resource::System::Boards, sizeof(Resource::System::Boards));
+		}
+
+		if (name == "ipl.rom" && mode == vfs::file::mode::read) {
+			return vfs::memory::file::open(Resource::System::IPLROM, sizeof(Resource::System::IPLROM));
 		}
 	}
 
-	if (id == 1) {  //Famicom
-		// print("platform::open  id = Famicom\n");
-		if(name == "manifest.bml" && mode == vfs::file::mode::read) {
-			// Load the manifest generated from the NSF file:
+	if (id == 1) {  //Super Famicom
+		// print("platform::open  id = Super Famicom\n");
+		if (name == "manifest.bml" && mode == vfs::file::mode::read) {
+			// Load the manifest generated from the SPC file:
 			// print("platform::open  manifest.bml from memory\n");
 			return vfs::memory::file::open(manifest.data<uint8_t>(), manifest.size());
 		} else if (name == "program.rom" && mode == vfs::file::mode::read) {
 			// print("platform::open  program.rom from memory\n");
-			return vfs::memory::file::open(prgrom.data<uint8_t>(), prgrom.size());
+			return vfs::memory::file::open(0, 0);
+		} else {
+			print("platform::open null response\n");
+			return vfs::memory::file::open(0, 0);
 		}
 	}
 
@@ -101,13 +105,31 @@ auto SPCPlayer::notify(string text) -> void {
 
 auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	auto buf = file::open(filename, file::mode::read);
-	if (buf.reads(5) != "NESM\x1A") {
-		print("Missing NESM header for SPC!\n");
+	if (buf.reads(33+2) != "SNES-SPC700 Sound File Data v0.30\x1A\x1A") {
+		print("Missing header for SPC!\n");
+		return;
+	}
+	auto hasID666 = buf.read() == 26;
+	auto spcVersion = buf.read();
+	if (spcVersion != 30) {
+		print("SPC version not 30\n");
 		return;
 	}
 
+	// Jump to real data:
+	buf.seek(0x100);
+
+	// An SPC dump is just a dump of SPC ram at the time of song init:
+	dspram.resize(65536);
+	dspram.fill(0xff);
+	buf.read(dspram);
+
+	// And the SPC700 DSP registers:
+	dspregs.resize(128);
+	dspregs.fill(0x00);
+	buf.read(dspregs);
+
 	auto song_name = "";
-	vector<uint8_t> prgrom;
 
 	// for (auto b: prgrom) {
 	// 	print("{0} ", string_format{hex(b, 2)});
@@ -119,16 +141,16 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	// Build a temporary manifest for cartridge to load:
 	manifest = "";
 	manifest.append("game\n");
-	manifest.append("  sha256: ", Hash::SHA256(prgrom).digest(), "\n");
+	manifest.append("  sha256: ", Hash::SHA256(dspram).digest(), "\n");
 	manifest.append("  label:  ", song_name, "\n");
 	manifest.append("  name:   ", filename, "\n");
 
-	manifest.append("  board:  NSF\n");
+	manifest.append("  board:  SPC\n");
 	manifest.append("    mirror mode=", "horizontal", "\n");
 
 	manifest.append("    memory\n");
 	manifest.append("      type: ", "ROM", "\n");
-	manifest.append("      size: 0x", hex(prgrom.size()), "\n");
+	manifest.append("      size: 0x", hex(0), "\n");
 	manifest.append("      content: ", "Program", "\n");
 
 	// print(manifest, "\n");
@@ -142,6 +164,19 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	Emulator::audio.setVolume(1.0);
 	Emulator::audio.setBalance(0.0);
 
+	// Grab a hold of the instantied SNES components:
+	cpu = &SuperFamicom::cpu;
+	ppu = &SuperFamicom::ppu;
+	smp = &SuperFamicom::smp;
+	dsp = &SuperFamicom::dsp;
+	system = &SuperFamicom::system;
+	scheduler = &SuperFamicom::scheduler;
+
+	// We don't actually need the CPU to do anything for SPC playing:
+	cpu->disabled = true;
+	ppu->disabled = true;
+
+	// Load and power up the system:
 	snes = new SuperFamicom::Interface;
 	// print("snes->load()\n");
 	if (!snes->load()) {
@@ -151,14 +186,13 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	// print("snes->power()\n");
 	snes->power();
 
-	cpu = &SuperFamicom::cpu;
-	smp = &SuperFamicom::smp;
-	dsp = &SuperFamicom::dsp;
-	system = &SuperFamicom::system;
-	scheduler = &SuperFamicom::scheduler;
-
-	// Disable PPU rendering to save performance:
-	// ppu->disabled = true;
+	// Load DSP RAM and regs:
+	for (auto n : range(dspram.size())) {
+		dsp->apuram[n] = dspram[n];
+	}
+	for (auto n : range(dspregs.size())) {
+		dsp->write(n, dspregs[n]);
+	}
 
 	// print("Region: {0}\n", string_format{(int)system.region()});
 
@@ -169,23 +203,15 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	wave.seek(header_size);
 	samples = 0;
 
-	const long play_seconds = 3 * 60 + 15;
+	// const long play_seconds = 3 * 60 + 15;
+	const long play_seconds = 5;
 
 	int plays = 0;
 	do
 	{
-#if DEBUG_NSF
-		print("pc = {0}, a = {1}, x = {2}, y = {3}, s = {4}\n", string_format{
-		     hex(cpu->r.pc, 4),
-		     hex(cpu->r.a, 2),
-		     hex(cpu->r.x, 2),
-		     hex(cpu->r.y, 2),
-		     hex(cpu->r.s, 2)
-		});
-#endif
-		if (scheduler->enter(Emulator::Scheduler::Mode::SynchronizeMaster) == Emulator::Scheduler::Event::Frame) {
-			plays++;
-		}
+		// smp->step(system->apuFrequency());
+		scheduler->enter(Emulator::Scheduler::Mode::SynchronizeMaster);
+		plays++;
 	} while (plays <= 60 * play_seconds);
 
 	// Write WAVE headers:

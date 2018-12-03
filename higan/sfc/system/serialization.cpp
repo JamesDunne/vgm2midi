@@ -47,9 +47,9 @@ auto System::serializeAll(serializer& s) -> void {
   system.serialize(s);
   random.serialize(s);
   cartridge.serialize(s);
-  cpu.serialize(s);
+  if (!cpu.disabled) cpu.serialize(s);
   smp.serialize(s);
-  ppu.serialize(s);
+  if (!ppu.disabled) ppu.serialize(s);
   dsp.serialize(s);
 
   if(cartridge.has.ICD) icd.serialize(s);

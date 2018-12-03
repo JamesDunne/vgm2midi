@@ -68,6 +68,8 @@ struct CPU : Processor::WDC65816, Thread, PPUcounter {
   vector<Thread*> coprocessors;
   vector<Thread*> peripherals;
 
+  bool disabled = false;
+
 private:
   uint version = 2;  //allowed: 1, 2
 

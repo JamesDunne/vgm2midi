@@ -18,6 +18,8 @@ struct PPU : Thread, PPUcounter {
   //serialization.cpp
   auto serialize(serializer&) -> void;
 
+  bool disabled = false;
+
 private:
   //ppu.cpp
   alwaysinline auto step(uint clocks) -> void;
