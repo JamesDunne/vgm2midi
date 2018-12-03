@@ -238,6 +238,13 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	{
 		// smp->step(system->apuFrequency());
 		for (double cycles = 0; cycles < totalCycles; cycles += 1.0) {
+			print("pc={0} x={1} y={2} a={3} s={4}\n", string_format{
+				hex(smp->r.pc.w,4),
+				hex(smp->r.x,2),
+				hex(smp->r.ya.byte.h,2),
+				hex(smp->r.ya.byte.l,2),
+				hex(smp->r.s,2)
+			});
 			scheduler->enter(Emulator::Scheduler::Mode::SynchronizeMaster);
 		}
 
