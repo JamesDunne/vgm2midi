@@ -6,6 +6,7 @@ struct SPCPlayer : Emulator::Platform {
 
 	// Generated manfiest and supporting data for SPC file:
 	string manifest;
+	vector<uint8_t> spcregs;
 	vector<uint8_t> dspram;
 	vector<uint8_t> dspregs;
 
@@ -116,6 +117,11 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 		return;
 	}
 
+	assert(buf.offset() == 0x25);
+	// Read SPC700 CPU registers:
+	spcregs.resize(0x2C - 0x25);
+	buf.read(spcregs);
+
 	// Jump to real data:
 	buf.seek(0x100);
 
@@ -185,6 +191,15 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	}
 	// print("snes->power()\n");
 	snes->power();
+
+	// Load SPC regs:
+	smp->r.pc.byte.l = spcregs[0];
+	smp->r.pc.byte.h = spcregs[1];
+	smp->r.ya.byte.l = spcregs[2];
+	smp->r.x = spcregs[3];
+	smp->r.ya.byte.h = spcregs[4];
+	smp->r.p = spcregs[5];
+	smp->r.s = spcregs[6];
 
 	// Load DSP RAM and regs:
 	for (auto n : range(dspram.size())) {
