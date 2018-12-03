@@ -204,13 +204,13 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	// if(_volatile)
 	// 	output.append("      volatile\n");
 
-	print(manifest, "\n");
+	// print(manifest, "\n");
 
-	print(song_name, "\n");
-	print(artist_name, "\n");
-	print(copyright_name, "\n");
-	print("count: {0}, start: {1}\n", string_format{song_count, start_song});
-	print("bank switching: {0}\n", string_format{bankswitch_enabled});
+	print("Song:      ", song_name, "\n");
+	print("Artist:    ", artist_name, "\n");
+	print("Copyright: ", copyright_name, "\n");
+	print("song count: {0}, start: {1}\n", string_format{song_count, start_song});
+	// print("bank switching: {0}\n", string_format{bankswitch_enabled});
 
 	Emulator::audio.setFrequency(48000);
 	Emulator::audio.setVolume(1.0);
@@ -261,8 +261,8 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	wave.seek(header_size);
 	samples = 0;
 
-	// const long play_seconds = 3 * 60 + 15;
-	const long play_seconds = 2 * 60 + 30;
+	const long play_seconds = 3 * 60 + 15;
+	// const long play_seconds = 2 * 60 + 30;
 
 	int plays = 0;
 	do

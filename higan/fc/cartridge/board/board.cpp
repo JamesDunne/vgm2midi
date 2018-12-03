@@ -136,7 +136,6 @@ auto Board::load(string manifest) -> Board* {
   cartridge.information.title = gameDocument["game/label"].text();
 
   string type = gameDocument["game/board"].text();
-  print("type: {0}\n", string_format{type});
 
   auto document = gameDocument["game"];
 
