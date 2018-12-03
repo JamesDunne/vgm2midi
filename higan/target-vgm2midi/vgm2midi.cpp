@@ -2,6 +2,7 @@
 #include <fc/fc.hpp>
 
 #include "nsfplayer.cpp"
+#include "spcplayer.cpp"
 
 // Main:
 #include <nall/main.hpp>
@@ -13,10 +14,16 @@ auto nall::main(Arguments arguments) -> void {
 		return;
 	}
 
-	if (filename.downcase().endsWith(".nsf")) {
+	auto df = filename.downcase();
+
+	if (df.endsWith(".nsf")) {
 		auto nsfplayer = new NSFPlayer;
 		platform = nsfplayer;
 		nsfplayer->run(filename, arguments);
+	} else if (df.endsWith(".spc")) {
+		auto spcplayer = new SPCPlayer;
+		platform = spcplayer;
+		spcplayer->run(filename, arguments);
 	} else {
 		print("Unrecognized file extension\n");
 		return;

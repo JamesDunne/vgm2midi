@@ -1,4 +1,6 @@
 
+#include <fc/fc.hpp>
+
 struct NSFPlayer : Emulator::Platform {
 	auto run(string filename, Arguments arguments) -> void;
 

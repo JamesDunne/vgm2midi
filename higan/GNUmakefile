@@ -45,8 +45,8 @@ obj/video.o: video/video.cpp
 obj/resource.o: resource/resource.cpp
 
 ifeq ($(target),vgm2midi)
-  # cores := fc sfc
-  cores := fc
+  cores := fc sfc
+  # cores := fc
 endif
 
 ifeq ($(target),higan)
