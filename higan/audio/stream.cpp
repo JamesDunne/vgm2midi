@@ -87,6 +87,7 @@ auto Stream::read(double samples[]) -> uint {
 }
 
 auto Stream::write(const double samples[]) -> void {
+  // print("Stream::write channels={0}\n", string_format{channels.size()});
   for(auto c : range(channels.size())) {
     double sample = samples[c] + 1e-25;  //constant offset used to suppress denormals
     for(auto& filter : channels[c].filters) {
@@ -98,6 +99,7 @@ auto Stream::write(const double samples[]) -> void {
     for(auto& filter : channels[c].nyquist) {
       sample = filter.process(sample);
     }
+    // print("Stream::write channels[{0}].resampler.write({1})\n", string_format{c, sample});
     channels[c].resampler.write(sample);
   }
 

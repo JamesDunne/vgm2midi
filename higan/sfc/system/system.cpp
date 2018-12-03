@@ -132,17 +132,17 @@ auto System::power(bool reset) -> void {
     if(cartridge.has.BSMemorySlot) cpu.coprocessors.append(&bsmemory);
 
     scheduler.primary(cpu);
+
+    controllerPort1.power(ID::Port::Controller1);
+    controllerPort2.power(ID::Port::Controller2);
+    expansionPort.power();
+
+    controllerPort1.connect(settings.controllerPort1);
+    controllerPort2.connect(settings.controllerPort2);
+    expansionPort.connect(settings.expansionPort);
   } else {
     scheduler.primary(smp);
   }
-
-  controllerPort1.power(ID::Port::Controller1);
-  controllerPort2.power(ID::Port::Controller2);
-  expansionPort.power();
-
-  controllerPort1.connect(settings.controllerPort1);
-  controllerPort2.connect(settings.controllerPort2);
-  expansionPort.connect(settings.expansionPort);
 }
 
 }

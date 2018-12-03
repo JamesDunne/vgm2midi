@@ -62,7 +62,7 @@ auto SPCPlayer::open(uint id, string name, vfs::file::mode mode, bool required) 
 			return vfs::memory::file::open(0, 0);
 		} else {
 			print("platform::open null response\n");
-			return vfs::memory::file::open(0, 0);
+			return {};
 		}
 	}
 
@@ -80,7 +80,7 @@ auto SPCPlayer::videoRefresh(uint display, const uint32* data, uint pitch, uint 
 	// print("videoRefresh\n");
 }
 auto SPCPlayer::audioSample(const double* samples, uint channels) -> void {
-	// if (!nsf->playing) return;
+	// print("audioSample channels={0}\n", string_format{channels});
 
 	// For SPC:
 	assert(channels == 2);
@@ -151,13 +151,13 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	manifest.append("  label:  ", song_name, "\n");
 	manifest.append("  name:   ", filename, "\n");
 
-	manifest.append("  board:  SPC\n");
-	manifest.append("    mirror mode=", "horizontal", "\n");
+	// manifest.append("  board:  SPC\n");
+	// manifest.append("    mirror mode=", "horizontal", "\n");
 
-	manifest.append("    memory\n");
-	manifest.append("      type: ", "ROM", "\n");
-	manifest.append("      size: 0x", hex(0), "\n");
-	manifest.append("      content: ", "Program", "\n");
+	// manifest.append("    memory\n");
+	// manifest.append("      type: ", "ROM", "\n");
+	// manifest.append("      size: 0x", hex(0), "\n");
+	// manifest.append("      content: ", "Program", "\n");
 
 	// print(manifest, "\n");
 
@@ -219,15 +219,22 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	samples = 0;
 
 	// const long play_seconds = 3 * 60 + 15;
-	const long play_seconds = 5;
+	const long play_seconds = 1;
+
+	// const double totalCycles = system->apuFrequency() / 12.0;
+	const double totalCycles = 1000 * 1024;
+	print("apu: {0}\n", string_format{totalCycles});
 
 	int plays = 0;
 	do
 	{
 		// smp->step(system->apuFrequency());
-		scheduler->enter(Emulator::Scheduler::Mode::SynchronizeMaster);
+		for (double cycles = 0; cycles < totalCycles; cycles += 1.0) {
+			scheduler->enter(Emulator::Scheduler::Mode::SynchronizeMaster);
+		}
+
 		plays++;
-	} while (plays <= 60 * play_seconds);
+	} while (plays <= play_seconds);
 
 	// Write WAVE headers:
 	long chan_count = 2;
