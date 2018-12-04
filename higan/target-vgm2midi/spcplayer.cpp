@@ -197,17 +197,6 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	// print("snes->power()\n");
 	snes->power();
 
-	// Load DSP RAM and regs:
-	for (auto n : range(dspram.size())) {
-		dsp->apuram[n] = dspram[n];
-	}
-	for (auto n : range(64)) {
-		smp->iplrom[n] = iplrom[n];
-	}
-	for (auto n : range(dspregs.size())) {
-		dsp->write(n, dspregs[n]);
-	}
-
 	// Load SPC regs:
 	smp->r.pc.byte.l = spcregs[0];
 	smp->r.pc.byte.h = spcregs[1];
@@ -217,7 +206,24 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	smp->r.p = spcregs[5];
 	smp->r.s = spcregs[6];
 
-	// print("Region: {0}\n", string_format{(int)system.region()});
+	// Load DSP RAM and regs:
+	for (auto n : range(dspram.size())) {
+		const uint16 address = n;
+		const uint8 data = dspram[n];
+
+  		dsp->apuram[address] = data;
+  		// if ((address & 0xfff0) == 0x00f0) smp->writeIO(address, data);
+	}
+
+	for (auto n : range(dspregs.size())) {
+		dsp->write(n, dspregs[n]);
+	}
+
+	for (auto n : range(64)) {
+		smp->iplrom[n] = iplrom[n];
+	}
+
+	print("SPC state loaded\n");
 
 	const int header_size = 0x2C;
 
@@ -237,7 +243,7 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	do
 	{
 		// smp->step(system->apuFrequency());
-		for (double cycles = 0; cycles < totalCycles; cycles += 1.0) {
+		for (long cycles = 0; cycles < totalCycles; cycles++) {
 			#if 0
 			print("pc={0} x={1} y={2} a={3} s={4}\n", string_format{
 				hex(smp->r.pc.w,4),
