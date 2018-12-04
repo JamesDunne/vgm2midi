@@ -201,11 +201,11 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	for (auto n : range(dspram.size())) {
 		dsp->apuram[n] = dspram[n];
 	}
-	for (auto n : range(dspregs.size())) {
-		dsp->setRegister(n, dspregs[n]);
-	}
 	for (auto n : range(64)) {
 		smp->iplrom[n] = iplrom[n];
+	}
+	for (auto n : range(dspregs.size())) {
+		dsp->write(n, dspregs[n]);
 	}
 
 	// Load SPC regs:
@@ -229,8 +229,8 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	// const long play_seconds = 3 * 60 + 15;
 	const long play_seconds = 1;
 
-	// const double totalCycles = system->apuFrequency() / 12.0;
-	const double totalCycles = 1000 * 1024;
+	const long totalCycles = (long)system->apuFrequency() / 12;
+	// const long totalCycles = 1000 * 1024;
 	print("apu: {0}\n", string_format{totalCycles});
 
 	int plays = 0;
@@ -238,6 +238,7 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	{
 		// smp->step(system->apuFrequency());
 		for (double cycles = 0; cycles < totalCycles; cycles += 1.0) {
+			#if 0
 			print("pc={0} x={1} y={2} a={3} s={4}\n", string_format{
 				hex(smp->r.pc.w,4),
 				hex(smp->r.x,2),
@@ -245,6 +246,7 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 				hex(smp->r.ya.byte.l,2),
 				hex(smp->r.s,2)
 			});
+			#endif
 			scheduler->enter(Emulator::Scheduler::Mode::SynchronizeMaster);
 		}
 
