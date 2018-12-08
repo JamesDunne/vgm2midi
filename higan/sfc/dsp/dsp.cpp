@@ -259,6 +259,29 @@ auto DSP::power(bool reset) -> void {
   //exact differences are unknown. need to separate memory from internal state
   for(auto r : range(0x80)) REG(r) = 0x00;
   REG(FLG) = 0xe0;
+  REG(ENDX) = 0xff;
+}
+
+auto DSP::loadDump(vector<uint8_t> dspregs) -> void {
+  for(auto r : range(0x80)) REG(r) = dspregs[r];
+
+  // Internal state
+  for ( int i = 8; --i >= 0; )
+  {
+    Voice* v = &voice[i];
+    v->brrOffset = 1;
+    v->vbit      = 1 << i;
+    v->vidx      = i * 0x10;
+  }
+  state.konBuffer = REG(KON);
+  state._dir      = REG(DIR);
+  state._esa      = REG(ESA);
+
+  state.noise             = 0x4000;
+  state.echoHistoryOffset = 0;
+  state.everyOtherSample  = 1;
+  state.echoOffset        = 0;
+  state.counter           = 0;
 }
 
 #undef REG

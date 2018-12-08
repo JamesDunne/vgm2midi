@@ -21,6 +21,8 @@ struct DSP : Thread {
 
   auto setRegister(uint8 reg, uint8 data) -> void;
 
+  auto loadDump(vector<uint8_t> dspregs) -> void;
+
 private:
   enum GlobalRegister : uint {
     MVOLL = 0x0c, MVOLR = 0x1c,

@@ -18,6 +18,8 @@ struct SMP : Processor::SPC700, Thread {
 
   uint8 iplrom[64];
 
+  auto loadDump(vector<uint8_t> dspram, vector<uint8_t> dspregs) -> void;
+
 private:
   struct IO {
     //timing

@@ -180,3 +180,32 @@ auto SMP::writeIO(uint16 address, uint8 data) -> void {
     break;
   }
 }
+
+auto SMP::loadDump(vector<uint8_t> dspram, vector<uint8_t> dspregs) -> void {
+  // Load DSP RAM and regs:
+  for (auto n : range(dspram.size())) {
+    const uint16 address = n;
+    const uint8 data = dspram[n];
+
+    dsp.apuram[address] = data;
+  }
+
+  writeIO(0xFC, dspram[0xFC]);
+  writeIO(0xFB, dspram[0xFB]);
+  writeIO(0xFA, dspram[0xFA]);
+  writeIO(0xF9, dspram[0xF9]);
+  writeIO(0xF8, dspram[0xF8]);
+  writeIO(0xF2, dspram[0xF2]);
+  writeIO(0xF1, dspram[0xF1] & 0x87);
+
+  io.apu0 = dspram[0xF4];
+  io.apu1 = dspram[0xF5];
+  io.apu2 = dspram[0xF6];
+  io.apu3 = dspram[0xF7];
+
+  timer0.stage3 = dspram[0xFD] & 15;
+  timer1.stage3 = dspram[0xFE] & 15;
+  timer2.stage3 = dspram[0xFF] & 15;
+
+  dsp.loadDump(dspregs);
+}

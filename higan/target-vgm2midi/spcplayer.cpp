@@ -62,7 +62,7 @@ auto SPCPlayer::open(uint id, string name, vfs::file::mode mode, bool required) 
 			// print("platform::open  program.rom from memory\n");
 			return vfs::memory::file::open(0, 0);
 		} else {
-			print("platform::open null response\n");
+			// print("platform::open null response\n");
 			return {};
 		}
 	}
@@ -142,11 +142,6 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 
 	auto song_name = "";
 
-	// for (auto b: prgrom) {
-	// 	print("{0} ", string_format{hex(b, 2)});
-	// }
-	// print("\n");
-
 	buf.close();
 
 	// Build a temporary manifest for cartridge to load:
@@ -197,31 +192,17 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	// print("snes->power()\n");
 	snes->power();
 
+	// Load SPC and DSP state:
+	smp->loadDump(dspram, dspregs);
+
 	// Load SPC regs:
 	smp->r.pc.byte.l = spcregs[0];
 	smp->r.pc.byte.h = spcregs[1];
-	smp->r.ya.byte.l = spcregs[2];
+	smp->r.ya.byte.l = spcregs[2];	// A
 	smp->r.x = spcregs[3];
-	smp->r.ya.byte.h = spcregs[4];
+	smp->r.ya.byte.h = spcregs[4];	// Y
 	smp->r.p = spcregs[5];
 	smp->r.s = spcregs[6];
-
-	// Load DSP RAM and regs:
-	for (auto n : range(dspram.size())) {
-		const uint16 address = n;
-		const uint8 data = dspram[n];
-
-  		dsp->apuram[address] = data;
-  		// if ((address & 0xfff0) == 0x00f0) smp->writeIO(address, data);
-	}
-
-	for (auto n : range(dspregs.size())) {
-		dsp->write(n, dspregs[n]);
-	}
-
-	for (auto n : range(64)) {
-		smp->iplrom[n] = iplrom[n];
-	}
 
 	print("SPC state loaded\n");
 
@@ -232,17 +213,15 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	wave.seek(header_size);
 	samples = 0;
 
-	// const long play_seconds = 3 * 60 + 15;
-	const long play_seconds = 1;
+	const long play_seconds = 5 * 60;
+	// const long play_seconds = 15;
 
-	const long totalCycles = (long)system->apuFrequency() / 12;
-	// const long totalCycles = 1000 * 1024;
-	print("apu: {0}\n", string_format{totalCycles});
+	const long totalCycles = (long)system->apuFrequency() * 16 / 768;
 
-	int plays = 0;
-	do
+	int seconds = 0;
+	print("time: {0}:{1}", string_format{pad(seconds / 60, 2, '0'), pad(seconds % 60, 2, '0')});
+	for (; seconds < play_seconds; seconds++)
 	{
-		// smp->step(system->apuFrequency());
 		for (long cycles = 0; cycles < totalCycles; cycles++) {
 			#if 0
 			print("pc={0} x={1} y={2} a={3} s={4}\n", string_format{
@@ -255,9 +234,9 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 			#endif
 			scheduler->enter(Emulator::Scheduler::Mode::SynchronizeMaster);
 		}
-
-		plays++;
-	} while (plays <= play_seconds);
+		print("\b\b\b\b\b\b\b\b\b\b\b\rtime: {0}:{1}", string_format{pad(seconds / 60, 2, '0'), pad(seconds % 60, 2, '0')});
+	}
+	print("\n");
 
 	// Write WAVE headers:
 	long chan_count = 2;
