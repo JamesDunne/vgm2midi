@@ -74,27 +74,22 @@ auto SPCPlayer::open(uint id, string name, vfs::file::mode mode, bool required) 
 	return {};
 }
 auto SPCPlayer::load(uint id, string name, string type, vector<string> options) -> Emulator::Platform::Load {
-	// print("load({0}, {1})\n", string_format{id, name});
 	return {id, "NTSC"};
 }
 auto SPCPlayer::videoRefresh(uint display, const uint32* data, uint pitch, uint width, uint height) -> void {
-	// print("videoRefresh\n");
 }
 auto SPCPlayer::audioSample(const double* samples, uint channels) -> void {
-	// print("audioSample channels={0}\n", string_format{channels});
-
 	// For SPC:
 	assert(channels == 2);
 
-	// Write 32-bit sample:
-	auto x = (float)samples[0];
-	auto y = (float)samples[1];
-	wave.write({&x, 4});
-	wave.write({&y, 4});
+	// Write 16-bit samples:
+	auto x = (int16_t)(samples[0] * 32767.0);
+	auto y = (int16_t)(samples[1] * 32767.0);
+	wave.write({&x, sizeof(int16_t)});
+	wave.write({&y, sizeof(int16_t)});
 	this->samples++;
 }
 auto SPCPlayer::inputPoll(uint port, uint device, uint input) -> int16 {
-	print("inputPoll\n");
 	return 0;
 }
 auto SPCPlayer::inputRumble(uint port, uint device, uint input, bool enable) -> void {}
@@ -241,9 +236,9 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	// Write WAVE headers:
 	long chan_count = 2;
 	long rate = 48000;
-	long ds = samples * sizeof (float);
+	long ds = samples * sizeof (int16_t);
 	long rs = header_size - 8 + ds;
-	int frame_size = chan_count * sizeof (float);
+	int frame_size = chan_count * sizeof (int16_t);
 	long bps = rate * frame_size;
 
 	unsigned char header [header_size] =
@@ -254,15 +249,15 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 		'W','A','V','E',
 		'f','m','t',' ',
 		0x10,0,0,0,         // size of fmt chunk
-		// 1,0,                // PCM format
-		3,0,				// float format
+		1,0,                // PCM format
+		// 3,0,				// float format
 		chan_count,0,       // channel count
 		rate,rate >> 8,     // sample rate
 		rate>>16,rate>>24,
 		bps,bps>>8,         // bytes per second
 		bps>>16,bps>>24,
 		frame_size,0,       // bytes per sample frame
-		32,0,               // bits per sample
+		16,0,               // bits per sample
 		'd','a','t','a',
 		ds,ds>>8,ds>>16,ds>>24// size of sample data
 		// ...              // sample data
