@@ -199,7 +199,7 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	smp->r.p = spcregs[5];
 	smp->r.s = spcregs[6];
 
-	print("SPC state loaded\n");
+	// print("SPC state loaded\n");
 
 	const int header_size = 0x2C;
 
@@ -208,7 +208,7 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	wave.seek(header_size);
 	samples = 0;
 
-	const long play_seconds = 5 * 60;
+	const long play_seconds = 4 * 60;
 	// const long play_seconds = 15;
 
 	const long totalCycles = (long)system->apuFrequency() * 16 / 768;
