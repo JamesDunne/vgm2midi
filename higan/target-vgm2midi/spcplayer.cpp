@@ -175,7 +175,7 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	// Load and power up the system:
 	snes = new SuperFamicom::Interface;
 	// Enable fast DSP mode:
-	snes->configure("Hacks/FastDSP/Enable", true);
+	snes->configure("Hacks/FastDSP/Enable", false);
 
 	// print("snes->load()\n");
 	if (!snes->load()) {
