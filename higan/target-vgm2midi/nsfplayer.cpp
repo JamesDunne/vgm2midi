@@ -263,10 +263,12 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	wave.seek(header_size);
 	samples = 0;
 
-	const long play_seconds = 3 * 60 + 15;
+	const long play_seconds = 4 * 60;
 	// const long play_seconds = 2 * 60 + 30;
 
 	int plays = 0;
+	int seconds = 0;
+	print("time: {0}:{1}", string_format{pad(seconds / 60, 2, '0'), pad(seconds % 60, 2, '0')});
 	do
 	{
 #if DEBUG_NSF
@@ -283,10 +285,17 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 			if ((nsf->nmiFlags & 1) || (nsf->nmiFlags & 2)) {
 				// print("play\n");
 				cpu->nmiLine(true);
-				plays++;
+			}
+
+			plays++;
+			if (plays >= 60) {
+				seconds++;
+				plays = 0;
+				print("\b\b\b\b\b\b\b\b\b\b\b\rtime: {0}:{1}", string_format{pad(seconds / 60, 2, '0'), pad(seconds % 60, 2, '0')});
 			}
 		}
-	} while (plays <= 60 * play_seconds);
+	} while (seconds < play_seconds);
+	print("\n");
 
 	// Write WAVE headers:
 	long chan_count = 1;
