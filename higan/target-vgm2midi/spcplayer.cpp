@@ -145,14 +145,9 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 	manifest.append("  sha256: ", Hash::SHA256(dspram).digest(), "\n");
 	manifest.append("  label:  ", song_name, "\n");
 	manifest.append("  name:   ", filename, "\n");
+	manifest.append("  region: ", "NTSC", "\n");
 
-	// manifest.append("  board:  SPC\n");
-	// manifest.append("    mirror mode=", "horizontal", "\n");
-
-	// manifest.append("    memory\n");
-	// manifest.append("      type: ", "ROM", "\n");
-	// manifest.append("      size: 0x", hex(0), "\n");
-	// manifest.append("      content: ", "Program", "\n");
+	manifest.append("  board:  SPC-MIDI\n");
 
 	// print(manifest, "\n");
 
@@ -179,6 +174,9 @@ auto SPCPlayer::run(string filename, Arguments arguments) -> void {
 
 	// Load and power up the system:
 	snes = new SuperFamicom::Interface;
+	// Enable fast DSP mode:
+	snes->configure("Hacks/FastDSP/Enable", true);
+
 	// print("snes->load()\n");
 	if (!snes->load()) {
 		print("SNES failed load()\n");
