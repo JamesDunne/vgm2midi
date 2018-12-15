@@ -280,7 +280,7 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 		     hex(cpu->r.s, 2)
 		});
 #endif
-		if (scheduler->enter(Famicom::Scheduler::Mode::SynchronizeMaster) == Emulator::Scheduler::Event::Frame) {
+		if (scheduler->enter(Emulator::Scheduler::Mode::SynchronizeMaster) == Emulator::Scheduler::Event::Frame) {
 			// Indicate NMI interrupt if requested by NSF player:
 			if ((nsf->nmiFlags & 1) || (nsf->nmiFlags & 2)) {
 				// print("play\n");
