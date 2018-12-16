@@ -4,6 +4,19 @@ auto MIDIFile::createTrack() -> shared_pointer<MTrk> {
   return &tracks[tracks.size() - 1];
 }
 
+auto MIDIFile::setTick(midi_tick_t tick) -> void {
+  for (auto track : tracks) {
+    track.setTick(tick);
+  }
+}
+
+auto MIDIFile::tick() -> midi_tick_t const {
+  if (tracks.size() == 0) return 0;
+
+  // All tracks should have same tick:
+  return tracks[0].tick();
+}
+
 auto MTrk::varint(uint value) -> void {
   uint8 chr1 = (uint8)(value & 0x7F);
   value >>= 7;

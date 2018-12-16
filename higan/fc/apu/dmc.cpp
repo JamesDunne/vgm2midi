@@ -86,4 +86,6 @@ auto APU::DMC::power() -> void {
   dmaBuffer = 0;
   sampleValid = 0;
   sample = 0;
+
+  midi = platform->createMIDITrack();
 }

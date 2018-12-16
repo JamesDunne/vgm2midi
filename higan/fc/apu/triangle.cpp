@@ -37,4 +37,6 @@ auto APU::Triangle::power() -> void {
   stepCounter = 0;
   linearLengthCounter = 0;
   reloadLinear = 0;
+
+  midi = platform->createMIDITrack();
 }

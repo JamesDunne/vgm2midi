@@ -39,4 +39,6 @@ auto APU::Noise::power() -> void {
   periodCounter = 1;
   shortMode = 0;
   lfsr = 1;
+
+  midi = platform->createMIDITrack();
 }

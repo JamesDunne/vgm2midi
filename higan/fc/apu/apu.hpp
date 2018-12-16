@@ -73,6 +73,8 @@ struct APU : Thread {
 
     uint11 period;
     uint periodCounter;
+
+    shared_pointer<MIDITrack> midi;
   } pulse[2];
 
   struct Triangle {
@@ -95,6 +97,8 @@ struct APU : Thread {
     uint5 stepCounter;
     uint8 linearLengthCounter;
     bool reloadLinear;
+
+    shared_pointer<MIDITrack> midi;
   } triangle;
 
   struct Noise {
@@ -114,6 +118,8 @@ struct APU : Thread {
 
     bool shortMode;
     uint15 lfsr;
+
+    shared_pointer<MIDITrack> midi;
   } noise;
 
   struct DMC {
@@ -147,6 +153,8 @@ struct APU : Thread {
 
     bool sampleValid;
     uint8 sample;
+
+    shared_pointer<MIDITrack> midi;
   } dmc;
 
   struct FrameCounter {

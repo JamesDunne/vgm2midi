@@ -24,4 +24,7 @@ struct MIDIFile {
   vector<MTrk> tracks;
 
   auto createTrack() -> shared_pointer<MTrk>;
+
+  auto setTick(midi_tick_t tick) -> void;
+  auto tick() -> midi_tick_t const;
 };

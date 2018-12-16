@@ -35,4 +35,6 @@ auto APU::Pulse::power() -> void {
   dutyCounter = 0;
   period = 0;
   periodCounter = 1;
+
+  midi = platform->createMIDITrack();
 }
