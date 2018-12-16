@@ -23,6 +23,7 @@ using namespace nall;
 #include "types.hpp"
 #include <libco/libco.h>
 #include <audio/audio.hpp>
+#include <audio/midi.hpp>
 #include <video/video.hpp>
 #include <resource/resource.hpp>
 

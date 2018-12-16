@@ -22,6 +22,8 @@ struct Platform {
   virtual auto inputRumble(uint port, uint device, uint input, bool enable) -> void {}
   virtual auto dipSettings(Markup::Node node) -> uint { return 0; }
   virtual auto notify(string text) -> void {}
+
+  virtual auto createMIDITrack() -> shared_pointer<MIDITrack> { return new MIDITrack::Null; }
 };
 
 extern Platform* platform;
