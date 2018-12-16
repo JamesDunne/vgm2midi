@@ -16,8 +16,10 @@ struct MTrk : MIDITrack {
 private:
   vector<uint8_t> bytes;
   midi_tick_t tick_;
+  midi_tick_t lastTick;
 
-  auto varint(uint value) -> void;
+  auto writeVarint(uint value) -> void;
+  auto writeTickDelta() -> void;
 };
 
 struct MIDIFile {

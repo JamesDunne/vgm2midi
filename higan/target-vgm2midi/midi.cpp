@@ -17,7 +17,7 @@ auto MIDIFile::tick() -> midi_tick_t const {
   return tracks[0].tick();
 }
 
-auto MTrk::varint(uint value) -> void {
+auto MTrk::writeVarint(uint value) -> void {
   uint8 chr1 = (uint8)(value & 0x7F);
   value >>= 7;
   if (value > 0) {
@@ -47,6 +47,13 @@ auto MTrk::varint(uint value) -> void {
   }
 }
 
+auto MTrk::writeTickDelta() -> void {
+  uint delta = tick_ - lastTick;
+  writeVarint(delta);
+
+  lastTick = tick_;
+}
+
 
 auto MTrk::setTick(midi_tick_t tick) -> void {
   assert(tick >= tick_);
@@ -57,51 +64,51 @@ auto MTrk::tick() -> midi_tick_t const {
 }
 
 auto MTrk::meta(uint8 event, const vector<uint8_t> &data) -> void {
-  varint(tick_);
+  writeTickDelta();
 
   bytes.append(0xFF);
   bytes.append(event & 0x7F);
 
-  varint(data.size());
+  writeVarint(data.size());
   bytes.appends(data);
 }
 
 auto MTrk::noteOff(uint4 channel, uint7 note, uint7 velocity) -> void {
-  varint(tick_);
+  writeTickDelta();
   bytes.append(0x80 | channel);
   bytes.append(note);
   bytes.append(velocity);
 }
 auto MTrk::noteOn(uint4 channel, uint7 note, uint7 velocity) -> void {
-  varint(tick_);
+  writeTickDelta();
   bytes.append(0x90 | channel);
   bytes.append(note);
   bytes.append(velocity);
 }
 auto MTrk::keyPressure(uint4 channel, uint7 note, uint7 velocity) -> void {
-  varint(tick_);
+  writeTickDelta();
   bytes.append(0xA0 | channel);
   bytes.append(note);
   bytes.append(velocity);
 }
 auto MTrk::control(uint4 channel, uint7 control, uint7 value) -> void {
-  varint(tick_);
+  writeTickDelta();
   bytes.append(0xB0 | channel);
   bytes.append(control);
   bytes.append(value);
 }
 auto MTrk::program(uint4 channel, uint7 program) -> void {
-  varint(tick_);
+  writeTickDelta();
   bytes.append(0xC0 | channel);
   bytes.append(program);
 }
 auto MTrk::channelPressure(uint4 channel, uint7 velocity) -> void {
-  varint(tick_);
+  writeTickDelta();
   bytes.append(0xD0 | channel);
   bytes.append(velocity);
 }
 auto MTrk::pitchBend(uint4 channel, uint14 wheel) -> void {
-  varint(tick_);
+  writeTickDelta();
   bytes.append(0xE0 | channel);
   bytes.append(wheel & 0x7F);
   bytes.append(wheel >> 7);
