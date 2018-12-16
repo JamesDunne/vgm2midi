@@ -10,6 +10,8 @@ using namespace nall;
 #include <emulator/emulator.hpp>
 extern Emulator::Interface* emulator;
 
+#include "midi.hpp"
+
 // #include "program/program.hpp"
 // #include "input/input.hpp"
 // #include "settings/settings.hpp"

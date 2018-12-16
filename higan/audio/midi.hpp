@@ -6,7 +6,7 @@ struct MIDITrack {
   virtual auto setTick(midi_tick_t tick) -> void = 0;
   virtual auto tick() -> midi_tick_t const = 0;
 
-  virtual auto meta(uint8 event, uint len, const char *data) -> void = 0;
+  virtual auto meta(uint8 event, const vector<uint8_t> &data) -> void = 0;
 
   virtual auto noteOff(uint4 channel, uint7 note, uint7 velocity) -> void = 0;
   virtual auto noteOn(uint4 channel, uint7 note, uint7 velocity) -> void = 0;
@@ -23,7 +23,7 @@ struct MIDITrack::Null : MIDITrack {
   auto setTick(midi_tick_t tick) -> void {}
   auto tick() -> midi_tick_t const { return 0; }
 
-  auto meta(uint8 event, uint len, const char *data) -> void {}
+  auto meta(uint8 event, const vector<uint8_t> &data) -> void {}
 
   auto noteOff(uint4 channel, uint7 note, uint7 velocity) -> void {}
   auto noteOn(uint4 channel, uint7 note, uint7 velocity) -> void {}

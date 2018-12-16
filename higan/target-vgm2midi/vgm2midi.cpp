@@ -1,5 +1,7 @@
 #include "vgm2midi.hpp"
 
+#include "midi.cpp"
+
 #include "nsfplayer.cpp"
 #include "spcplayer.cpp"
 

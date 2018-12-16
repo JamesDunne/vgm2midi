@@ -24,6 +24,8 @@ struct NSFPlayer : Emulator::Platform {
 	Famicom::Scheduler* scheduler;
 	Famicom::NSF* nsf;
 
+	MIDIFile midiFile;
+
 	// Emulator::Platform
 	auto path(uint id) -> string override;
 	auto open(uint id, string name, vfs::file::mode mode, bool required) -> vfs::shared::file override;
@@ -34,6 +36,8 @@ struct NSFPlayer : Emulator::Platform {
 	auto inputRumble(uint port, uint device, uint input, bool enable) -> void override;
 	auto dipSettings(Markup::Node node) -> uint override;
 	auto notify(string text) -> void override;
+
+	auto createMIDITrack() -> shared_pointer<MIDITrack> override;
 };
 
 auto NSFPlayer::path(uint id) -> string {
@@ -96,6 +100,10 @@ auto NSFPlayer::dipSettings(Markup::Node node) -> uint {
 }
 auto NSFPlayer::notify(string text) -> void {
 	print("notify(\"{0}\")\n", string_format{text});
+}
+
+auto NSFPlayer::createMIDITrack() -> shared_pointer<MIDITrack> {
+	return midiFile.createTrack();
 }
 
 auto NSFPlayer::run(string filename, Arguments arguments) -> void {

@@ -5,7 +5,7 @@ name := vgm2midi
 objects += ui-vgm2midi ui-resource
 objects := $(objects:%=obj/%.o)
 
-obj/ui-vgm2midi.o: $(ui)/vgm2midi.cpp $(ui)/resource/resource.cpp
+obj/ui-vgm2midi.o: $(ui)/vgm2midi.cpp $(ui)/midi.cpp $(ui)/resource/resource.cpp
 # obj/ui-program.o: $(ui)/program/program.cpp
 # obj/ui-input.o: $(ui)/input/input.cpp
 # obj/ui-settings.o: $(ui)/settings/settings.cpp
