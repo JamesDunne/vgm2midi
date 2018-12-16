@@ -1,4 +1,6 @@
 
+// MIDIFile:
+
 auto MIDIFile::createTrack() -> shared_pointer<MTrk> {
   tracks.resize(tracks.size() + 1);
   return &tracks[tracks.size() - 1];
@@ -16,6 +18,9 @@ auto MIDIFile::tick() -> midi_tick_t const {
   // All tracks should have same tick:
   return tracks[0].tick();
 }
+
+
+// MTrk:
 
 auto MTrk::writeVarint(uint value) -> void {
   uint8 chr1 = (uint8)(value & 0x7F);
@@ -79,34 +84,40 @@ auto MTrk::noteOff(uint4 channel, uint7 note, uint7 velocity) -> void {
   bytes.append(note);
   bytes.append(velocity);
 }
+
 auto MTrk::noteOn(uint4 channel, uint7 note, uint7 velocity) -> void {
   writeTickDelta();
   bytes.append(0x90 | channel);
   bytes.append(note);
   bytes.append(velocity);
 }
+
 auto MTrk::keyPressure(uint4 channel, uint7 note, uint7 velocity) -> void {
   writeTickDelta();
   bytes.append(0xA0 | channel);
   bytes.append(note);
   bytes.append(velocity);
 }
+
 auto MTrk::control(uint4 channel, uint7 control, uint7 value) -> void {
   writeTickDelta();
   bytes.append(0xB0 | channel);
   bytes.append(control);
   bytes.append(value);
 }
+
 auto MTrk::program(uint4 channel, uint7 program) -> void {
   writeTickDelta();
   bytes.append(0xC0 | channel);
   bytes.append(program);
 }
+
 auto MTrk::channelPressure(uint4 channel, uint7 velocity) -> void {
   writeTickDelta();
   bytes.append(0xD0 | channel);
   bytes.append(velocity);
 }
+
 auto MTrk::pitchBend(uint4 channel, uint14 wheel) -> void {
   writeTickDelta();
   bytes.append(0xE0 | channel);
