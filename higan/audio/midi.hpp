@@ -13,7 +13,7 @@ struct MIDITrack {
   virtual auto keyPressure(uint4 channel, uint7 note, uint7 velocity) -> void = 0;
   virtual auto control(uint4 channel, uint7 control, uint7 value) -> void = 0;
   virtual auto program(uint4 channel, uint7 program) -> void = 0;
-  virtual auto channelPressure(uint4 channel, uint7 program) -> void = 0;
+  virtual auto channelPressure(uint4 channel, uint7 velocity) -> void = 0;
   virtual auto pitchBend(uint4 channel, uint14 wheel) -> void = 0;
 
   struct Null;
@@ -30,6 +30,6 @@ struct MIDITrack::Null : MIDITrack {
   auto keyPressure(uint4 channel, uint7 note, uint7 velocity) -> void {}
   auto control(uint4 channel, uint7 control, uint7 value) -> void {}
   auto program(uint4 channel, uint7 program) -> void {}
-  auto channelPressure(uint4 channel, uint7 program) -> void {}
+  auto channelPressure(uint4 channel, uint7 velocity) -> void {}
   auto pitchBend(uint4 channel, uint14 wheel) -> void {}
 };

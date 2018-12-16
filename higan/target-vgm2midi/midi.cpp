@@ -54,23 +54,42 @@ auto MTrk::meta(uint8 event, const vector<uint8_t> &data) -> void {
 }
 
 auto MTrk::noteOff(uint4 channel, uint7 note, uint7 velocity) -> void {
-
+  varint(tick_);
+  bytes.append(0x80 | channel);
+  bytes.append(note);
+  bytes.append(velocity);
 }
 auto MTrk::noteOn(uint4 channel, uint7 note, uint7 velocity) -> void {
-
+  varint(tick_);
+  bytes.append(0x90 | channel);
+  bytes.append(note);
+  bytes.append(velocity);
 }
 auto MTrk::keyPressure(uint4 channel, uint7 note, uint7 velocity) -> void {
-
+  varint(tick_);
+  bytes.append(0xA0 | channel);
+  bytes.append(note);
+  bytes.append(velocity);
 }
 auto MTrk::control(uint4 channel, uint7 control, uint7 value) -> void {
-
+  varint(tick_);
+  bytes.append(0xB0 | channel);
+  bytes.append(control);
+  bytes.append(value);
 }
 auto MTrk::program(uint4 channel, uint7 program) -> void {
-
+  varint(tick_);
+  bytes.append(0xC0 | channel);
+  bytes.append(program);
 }
-auto MTrk::channelPressure(uint4 channel, uint7 program) -> void {
-
+auto MTrk::channelPressure(uint4 channel, uint7 velocity) -> void {
+  varint(tick_);
+  bytes.append(0xD0 | channel);
+  bytes.append(velocity);
 }
 auto MTrk::pitchBend(uint4 channel, uint14 wheel) -> void {
-
+  varint(tick_);
+  bytes.append(0xE0 | channel);
+  bytes.append(wheel & 0x7F);
+  bytes.append(wheel >> 7);
 }
