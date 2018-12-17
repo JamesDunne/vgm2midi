@@ -19,6 +19,29 @@ auto MIDIFile::tick() -> midi_tick_t const {
   return tracks[0].tick();
 }
 
+auto MIDIFile::save(string path) -> void const {
+  auto buf = file::open(path, file::mode::write);
+
+  buf.write({"MThd", 4});
+  // MThd length:
+  buf.writem(6, 4);
+  // format 1:
+  buf.writem(1, 2);
+  // track count:
+  buf.writem(tracks.size(), 2);
+  // division:
+  buf.writem(480, 2);
+
+  for (auto track : tracks) {
+    buf.write({"MTrk", 4});
+    // MTrk length:
+    buf.writem(track.bytes.size(), 4);
+    buf.write(track.bytes);
+  }
+
+  buf.close();
+}
+
 
 // MTrk:
 

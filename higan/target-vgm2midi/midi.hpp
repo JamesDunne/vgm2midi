@@ -20,6 +20,8 @@ private:
 
   auto writeVarint(uint value) -> void;
   auto writeTickDelta() -> void;
+
+  friend struct MIDIFile;
 };
 
 struct MIDIFile {
@@ -29,4 +31,6 @@ struct MIDIFile {
 
   auto setTick(midi_tick_t tick) -> void;
   auto tick() -> midi_tick_t const;
+
+  auto save(string path) -> void const;
 };
