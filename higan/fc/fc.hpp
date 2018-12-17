@@ -40,6 +40,7 @@ namespace Famicom {
   #include <fc/memory/memory.hpp>
   #include <fc/cartridge/cartridge.hpp>
   #include <fc/cpu/cpu.hpp>
+  #include <fc/apu/midi_instrument.hpp>
   #include <fc/apu/apu.hpp>
   #include <fc/ppu/ppu.hpp>
 }

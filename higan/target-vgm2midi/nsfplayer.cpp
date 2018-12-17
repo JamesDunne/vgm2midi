@@ -37,7 +37,7 @@ struct NSFPlayer : Emulator::Platform {
 	auto dipSettings(Markup::Node node) -> uint override;
 	auto notify(string text) -> void override;
 
-	auto createMIDITrack() -> shared_pointer<MIDITrack> override;
+	auto createMIDITrack() -> shared_pointer<MIDIDevice> override;
 };
 
 auto NSFPlayer::path(uint id) -> string {
@@ -102,7 +102,7 @@ auto NSFPlayer::notify(string text) -> void {
 	print("notify(\"{0}\")\n", string_format{text});
 }
 
-auto NSFPlayer::createMIDITrack() -> shared_pointer<MIDITrack> {
+auto NSFPlayer::createMIDITrack() -> shared_pointer<MIDIDevice> {
 	return midiFile.createTrack();
 }
 
@@ -271,7 +271,7 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	wave.seek(header_size);
 	samples = 0;
 
-	const long play_seconds = 0 * 60 + 30;
+	const long play_seconds = 0 * 60 + 10;
 	// const long play_seconds = 4 * 60;
 	// const long play_seconds = 2 * 60 + 30;
 

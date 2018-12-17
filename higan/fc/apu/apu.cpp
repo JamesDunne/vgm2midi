@@ -2,6 +2,7 @@
 
 namespace Famicom {
 
+#include "midi_instrument.cpp"
 #include "envelope.cpp"
 #include "sweep.cpp"
 #include "pulse.cpp"
@@ -78,6 +79,9 @@ auto APU::power(bool reset) -> void {
   stream->addFilter(Emulator::Filter::Order::First, Emulator::Filter::Type::HighPass, 440.0);
   stream->addFilter(Emulator::Filter::Order::First, Emulator::Filter::Type::LowPass, 14000.0);
   stream->enableFilterDCOffset();
+
+  pulse[0].n = 0;
+  pulse[1].n = 1;
 
   pulse[0].power();
   pulse[1].power();
@@ -158,6 +162,8 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
 
     if(enabledChannels & (1 << n)) {
       pulse[n].lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
+      pulse[n].midiNoteOff();
+      pulse[n].midiNoteOn();
     }
     return;
   }

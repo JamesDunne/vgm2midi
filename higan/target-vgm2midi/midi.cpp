@@ -92,59 +92,83 @@ auto MTrk::tick() -> midi_tick_t const {
   return tick_;
 }
 
-auto MTrk::meta(uint8 event, const vector<uint8_t> &data) -> void {
+auto MTrk::meta(uint7 event, const vector<uint8_t> &data) -> void {
   writeTickDelta();
 
   bytes.append(0xFF);
-  bytes.append(event & 0x7F);
+  bytes.append(event);
 
   writeVarint(data.size());
   bytes.appends(data);
 }
 
 auto MTrk::noteOff(uint4 channel, uint7 note, uint7 velocity) -> void {
+  if (!channels[channel].note) return;
+
   writeTickDelta();
   bytes.append(0x80 | channel);
   bytes.append(note);
   bytes.append(velocity);
+
+  MIDIDevice::noteOff(channel, note, velocity);
 }
 
 auto MTrk::noteOn(uint4 channel, uint7 note, uint7 velocity) -> void {
+  if (channels[channel].note && channels[channel].note() == note) return;
+
   writeTickDelta();
   bytes.append(0x90 | channel);
   bytes.append(note);
   bytes.append(velocity);
+
+  MIDIDevice::noteOn(channel, note, velocity);
 }
 
-auto MTrk::keyPressure(uint4 channel, uint7 note, uint7 velocity) -> void {
+auto MTrk::keyPressureChange(uint4 channel, uint7 note, uint7 velocity) -> void {
   writeTickDelta();
   bytes.append(0xA0 | channel);
   bytes.append(note);
   bytes.append(velocity);
+
+  MIDIDevice::keyPressureChange(channel, note, velocity);
 }
 
-auto MTrk::control(uint4 channel, uint7 control, uint7 value) -> void {
+auto MTrk::controlChange(uint4 channel, uint7 control, uint7 value) -> void {
+  if (channels[channel].control[control] && channels[channel].control[control]() == value) return;
+
   writeTickDelta();
   bytes.append(0xB0 | channel);
   bytes.append(control);
   bytes.append(value);
+
+  MIDIDevice::controlChange(channel, control, value);
 }
 
-auto MTrk::program(uint4 channel, uint7 program) -> void {
+auto MTrk::programChange(uint4 channel, uint7 program) -> void {
+  if (channels[channel].program && channels[channel].program() == program) return;
+
   writeTickDelta();
   bytes.append(0xC0 | channel);
   bytes.append(program);
+
+  MIDIDevice::programChange(channel, program);
 }
 
-auto MTrk::channelPressure(uint4 channel, uint7 velocity) -> void {
+auto MTrk::channelPressureChange(uint4 channel, uint7 velocity) -> void {
   writeTickDelta();
   bytes.append(0xD0 | channel);
   bytes.append(velocity);
+
+  MIDIDevice::channelPressureChange(channel, velocity);
 }
 
-auto MTrk::pitchBend(uint4 channel, uint14 wheel) -> void {
+auto MTrk::pitchBendChange(uint4 channel, uint14 pitchBend) -> void {
+  if (channels[channel].pitchBend && channels[channel].pitchBend() == pitchBend) return;
+
   writeTickDelta();
   bytes.append(0xE0 | channel);
-  bytes.append(wheel & 0x7F);
-  bytes.append(wheel >> 7);
+  bytes.append(pitchBend & 0x7F);
+  bytes.append(pitchBend >> 7);
+
+  MIDIDevice::pitchBendChange(channel, pitchBend);
 }

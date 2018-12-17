@@ -89,3 +89,7 @@ auto APU::DMC::power() -> void {
 
   midi = platform->createMIDITrack();
 }
+
+auto APU::DMC::midiNote() -> uint7 {
+  return 32;
+}

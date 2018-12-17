@@ -54,7 +54,7 @@ struct APU : Thread {
     uint11 pulsePeriod;
   };
 
-  struct Pulse {
+  struct Pulse : MIDIMelodic {
     auto clockLength() -> void;
     auto checkPeriod() -> bool;
     auto clock() -> uint8;
@@ -74,10 +74,14 @@ struct APU : Thread {
     uint11 period;
     uint periodCounter;
 
-    shared_pointer<MIDITrack> midi;
+    uint n; // which pulse (0, 1) is this
+
+    virtual auto midiChannel() -> uint4 override;
+    virtual auto midiPitchBend() -> uint14 override;
+    virtual auto midiNote() -> uint7 override;
   } pulse[2];
 
-  struct Triangle {
+  struct Triangle : MIDIMelodic {
     auto clockLength() -> void;
     auto clockLinearLength() -> void;
     auto clock() -> uint8;
@@ -98,10 +102,12 @@ struct APU : Thread {
     uint8 linearLengthCounter;
     bool reloadLinear;
 
-    shared_pointer<MIDITrack> midi;
+    virtual auto midiChannel() -> uint4 override;
+    virtual auto midiPitchBend() -> uint14 override;
+    virtual auto midiNote() -> uint7 override;
   } triangle;
 
-  struct Noise {
+  struct Noise : MIDIRhythmic {
     auto clockLength() -> void;
     auto clock() -> uint8;
 
@@ -119,10 +125,10 @@ struct APU : Thread {
     bool shortMode;
     uint15 lfsr;
 
-    shared_pointer<MIDITrack> midi;
+    virtual auto midiNote() -> uint7 override;
   } noise;
 
-  struct DMC {
+  struct DMC : MIDIRhythmic {
     auto start() -> void;
     auto stop() -> void;
     auto clock() -> uint8;
@@ -154,7 +160,7 @@ struct APU : Thread {
     bool sampleValid;
     uint8 sample;
 
-    shared_pointer<MIDITrack> midi;
+    virtual auto midiNote() -> uint7 override;
   } dmc;
 
   struct FrameCounter {

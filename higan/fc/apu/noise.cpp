@@ -42,3 +42,7 @@ auto APU::Noise::power() -> void {
 
   midi = platform->createMIDITrack();
 }
+
+auto APU::Noise::midiNote() -> uint7 {
+  return 32;
+}
