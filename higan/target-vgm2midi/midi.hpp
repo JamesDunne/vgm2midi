@@ -1,5 +1,9 @@
 
+struct MIDIFile;
+
 struct MTrk : MIDIDevice {
+  MTrk(MIDIFile& file_) : file(file_) {}
+
   virtual auto noteOff(uint4 channel, uint7 note, uint7 velocity) -> void override;
   virtual auto noteOn(uint4 channel, uint7 note, uint7 velocity) -> void override;
   virtual auto keyPressureChange(uint4 channel, uint7 note, uint7 velocity) -> void override;
@@ -14,6 +18,7 @@ struct MTrk : MIDIDevice {
   virtual auto tick() -> midi_tick_t const override;
 
 private:
+  MIDIFile& file;
   vector<uint8_t> bytes;
   midi_tick_t tick_;
   midi_tick_t lastTick;
@@ -33,4 +38,15 @@ struct MIDIFile {
   auto tick() -> midi_tick_t const;
 
   auto save(string path) -> void const;
+
+private:
+  struct {
+    maybe<uint7> note;
+    maybe<uint7> noteKeyPressure[128];
+    maybe<uint7> program;
+    maybe<uint7> control[128];
+    maybe<uint14> pitchBend;
+  } channels[16];
+
+  friend struct MTrk;
 };
