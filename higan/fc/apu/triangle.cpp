@@ -45,17 +45,10 @@ auto APU::Triangle::midiChannel() -> uint4 {
   return 8;
 }
 
-auto APU::Triangle::midiNote() -> uint7 {
+auto APU::Triangle::midiNote() -> double {
   double f = system.frequency() / (16 * (period + 1));
   double n = (log(f / 54.99090178) / log(2)) * 12;
 
   // MIDI 21 = A 1
-  return round(n) + 21;
-}
-
-auto APU::Triangle::midiPitchBend() -> uint14 {
-  double f = system.frequency() / (16 * (period + 1));
-  double n = (log(f / 54.99090178) / log(2)) * 12;
-
-  return (uint14)((n - round(n)) * 0xFFF) + 0x2000;
+  return n + 21;
 }

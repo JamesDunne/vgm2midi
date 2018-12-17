@@ -3,54 +3,45 @@ auto MIDIMelodic::midiNoteOff() -> void {
 }
 
 auto MIDIMelodic::midiNoteOn() -> void {
-#if 0
-  auto m = midiNote();
-  auto new_midi_channel = midiChannel();
-  auto new_channel_volume = midiChannelVolume();
+  const int wheel_threshold = 384;
 
-  if (m != lastMidiNote) {
+  auto n = midiNote();
+  auto m = round(n);
+  auto newMidiChannel = midiChannel();
+  auto newChannelVolume = midiChannelVolume();
+
+  if (!lastMidiNote || m != round(lastMidiNote())) {
     midiNoteOff();
 
-    if (new_channel_volume != last_midi_channel_volume[new_midi_channel]) {
-      midi.control(new_midi_channel, 0x07, new_channel_volume);
-      last_midi_channel_volume[new_midi_channel] = new_channel_volume;
-    }
+    // Update channel volume:
+    midi->controlChange(newMidiChannel, 0x07, newChannelVolume);
 
-    note_on_period = period();
-    if (midi_pitch_wheel_enabled()) {
-      if (abs(period_cents[note_on_period]-0x2000) < wheel_threshold &&
-        last_wheel_emit[new_midi_channel] != 0x2000)
-      {
-        // Reset pitch wheel to 0:
-        midi_write_pitch_wheel(new_midi_channel, 0x2000);
+    if (midiPitchBendEnabled()) {
+      // Reset pitch bend if within a tolerance of a concert pitch:
+      if (abs(n - m) < 0.0625) {
+        // Reset pitch bend to 0:
+        midi->pitchBendChange(newMidiChannel, 0x2000);
       }
     }
-    midi_write_note_on();
-    last_midi_channel = new_midi_channel;
-  } else {
-    if (new_channel_volume != last_midi_channel_volume[last_midi_channel]) {
-      // Update last channel played on's volume since we don't really support switching
-      // duty cycle without restarting the note (i.e. playing it across multiple channels).
-      midi_write_channel_volume(last_midi_channel);
-      last_midi_channel_volume[last_midi_channel] = new_channel_volume;
-    }
+
+    // Note ON:
+    midi->noteOn(newMidiChannel, m, midiNoteVelocity());
+    lastMidiChannel = newMidiChannel;
+    lastMidiNote = m;
+  } else if (lastMidiChannel) {
+    // Update last channel played on's volume since we don't really support switching
+    // duty cycle without restarting the note (i.e. playing it across multiple channels).
+    midi->controlChange(lastMidiChannel(), 0x07, newChannelVolume);
   }
 
-  if (midi_pitch_wheel_enabled()) {
+  if (midiPitchBendEnabled() && lastMidiNote) {
     // Period is changing too finely for MIDI note to change:
-    int wheel = period_cents[period()];
-    if (abs(wheel-0x2000) >= wheel_threshold ||
-      abs(period_cents[note_on_period]-wheel) >= wheel_threshold)
-    {
-      if (last_wheel_emit[last_midi_channel] != wheel) {
-        // Emit pitch wheel change:
-        midi_write_pitch_wheel(last_midi_channel, wheel);
-      }
+    if (abs(n - lastMidiNote()) >= 0.0625) {
+      // Emit pitch wheel change:
+      auto newPitchBend = midiPitchBend(n);
+      midi->pitchBendChange(lastMidiChannel(), newPitchBend);
     }
   }
-
-  lastMidiNote = m;
-#endif
 }
 
 auto MIDIRhythmic::midiNoteOff() -> void {

@@ -43,17 +43,10 @@ auto APU::Pulse::midiChannel() -> uint4 {
   return 4 * n + duty;
 }
 
-auto APU::Pulse::midiNote() -> uint7 {
+auto APU::Pulse::midiNote() -> double {
   double f = system.frequency() / (16 * (period + 1));
   double n = (log(f / 54.99090178) / log(2)) * 12;
 
   // MIDI 33 = A 2
-  return round(n) + 33;
-}
-
-auto APU::Pulse::midiPitchBend() -> uint14 {
-  double f = system.frequency() / (16 * (period + 1));
-  double n = (log(f / 54.99090178) / log(2)) * 12;
-
-  return (uint14)((n - round(n)) * 0xFFF) + 0x2000;
+  return n + 33;
 }

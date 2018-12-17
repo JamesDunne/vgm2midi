@@ -77,8 +77,7 @@ struct APU : Thread {
     uint n; // which pulse (0, 1) is this
 
     virtual auto midiChannel() -> uint4 override;
-    virtual auto midiPitchBend() -> uint14 override;
-    virtual auto midiNote() -> uint7 override;
+    virtual auto midiNote() -> double override;
   } pulse[2];
 
   struct Triangle : MIDIMelodic {
@@ -103,8 +102,7 @@ struct APU : Thread {
     bool reloadLinear;
 
     virtual auto midiChannel() -> uint4 override;
-    virtual auto midiPitchBend() -> uint14 override;
-    virtual auto midiNote() -> uint7 override;
+    virtual auto midiNote() -> double override;
   } triangle;
 
   struct Noise : MIDIRhythmic {
@@ -125,7 +123,7 @@ struct APU : Thread {
     bool shortMode;
     uint15 lfsr;
 
-    virtual auto midiNote() -> uint7 override;
+    virtual auto midiNote() -> double override;
   } noise;
 
   struct DMC : MIDIRhythmic {
@@ -160,7 +158,7 @@ struct APU : Thread {
     bool sampleValid;
     uint8 sample;
 
-    virtual auto midiNote() -> uint7 override;
+    virtual auto midiNote() -> double override;
   } dmc;
 
   struct FrameCounter {
