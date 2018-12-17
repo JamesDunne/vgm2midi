@@ -102,6 +102,19 @@ auto MTrk::meta(uint7 event, const vector<uint8_t> &data) -> void {
   bytes.appends(data);
 }
 
+auto MTrk::note(uint4 channel) -> maybe<uint7> {
+  return file.channels[channel].note;
+}
+auto MTrk::control(uint4 channel, uint7 control) -> maybe<uint7> {
+  return file.channels[channel].control[control];
+}
+auto MTrk::program(uint4 channel) -> maybe<uint7> {
+  return file.channels[channel].program;
+}
+auto MTrk::pitchBend(uint4 channel) -> maybe<uint14> {
+  return file.channels[channel].pitchBend;
+}
+
 auto MTrk::noteOff(uint4 channel, uint7 note, uint7 velocity) -> void {
   if (!file.channels[channel].note) return;
 
