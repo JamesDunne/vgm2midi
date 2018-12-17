@@ -23,6 +23,7 @@ struct Platform {
   virtual auto dipSettings(Markup::Node node) -> uint { return 0; }
   virtual auto notify(string text) -> void {}
 
+  virtual auto advanceMIDITicks(midi_tick_t ticks) -> void {}
   virtual auto createMIDITrack() -> shared_pointer<MIDIDevice> { return new MIDIDevice::Null; }
 };
 

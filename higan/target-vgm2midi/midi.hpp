@@ -19,22 +19,20 @@ struct MTrk : MIDIDevice {
 
   virtual auto meta(uint7 event, const vector<uint8_t> &data) -> void override;
 
-  virtual auto setTick(midi_tick_t tick) -> void override;
-  virtual auto tick() -> midi_tick_t const override;
-
 private:
   MIDIFile& file;
   vector<uint8_t> bytes;
   midi_tick_t tick_;
-  midi_tick_t lastTick;
 
   auto writeVarint(uint value) -> void;
   auto writeTickDelta() -> void;
 
+  auto advanceTicks(midi_tick_t ticks) -> void;
+
   friend struct MIDIFile;
 };
 
-struct MIDIFile {
+struct MIDIFile : MIDITiming {
   vector<MTrk*> tracks;
 
   auto createTrack() -> shared_pointer<MTrk>;
@@ -43,6 +41,8 @@ struct MIDIFile {
   auto tick() -> midi_tick_t const;
 
   auto save(string path) -> void const;
+
+  virtual auto advanceTicks(midi_tick_t ticks) -> void override;
 
 private:
   struct {

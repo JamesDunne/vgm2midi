@@ -7,17 +7,10 @@ auto MIDIFile::createTrack() -> shared_pointer<MTrk> {
   return mtrk;
 }
 
-auto MIDIFile::setTick(midi_tick_t tick) -> void {
-  for (auto track : tracks) {
-    track->setTick(tick);
+auto MIDIFile::advanceTicks(midi_tick_t ticks) -> void {
+  for (auto track: tracks) {
+    track->advanceTicks(ticks);
   }
-}
-
-auto MIDIFile::tick() -> midi_tick_t const {
-  if (tracks.size() == 0) return 0;
-
-  // All tracks should have same tick:
-  return tracks[0]->tick();
 }
 
 auto MIDIFile::save(string path) -> void const {
@@ -45,6 +38,10 @@ auto MIDIFile::save(string path) -> void const {
 
 
 // MTrk:
+
+auto MTrk::advanceTicks(midi_tick_t ticks) -> void {
+  tick_ += ticks;
+}
 
 auto MTrk::writeVarint(uint value) -> void {
   uint8 chr1 = (uint8)(value & 0x7F);
@@ -77,19 +74,9 @@ auto MTrk::writeVarint(uint value) -> void {
 }
 
 auto MTrk::writeTickDelta() -> void {
-  uint delta = tick_ - lastTick;
-  writeVarint(delta);
+  writeVarint(tick_);
 
-  lastTick = tick_;
-}
-
-
-auto MTrk::setTick(midi_tick_t tick) -> void {
-  assert(tick >= tick_);
-  tick_ = tick;
-}
-auto MTrk::tick() -> midi_tick_t const {
-  return tick_;
+  tick_ = 0;
 }
 
 auto MTrk::meta(uint7 event, const vector<uint8_t> &data) -> void {

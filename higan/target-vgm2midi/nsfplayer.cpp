@@ -37,6 +37,7 @@ struct NSFPlayer : Emulator::Platform {
 	auto dipSettings(Markup::Node node) -> uint override;
 	auto notify(string text) -> void override;
 
+	auto advanceMIDITicks(midi_tick_t ticks) -> void override;
 	auto createMIDITrack() -> shared_pointer<MIDIDevice> override;
 };
 
@@ -102,6 +103,9 @@ auto NSFPlayer::notify(string text) -> void {
 	print("notify(\"{0}\")\n", string_format{text});
 }
 
+auto NSFPlayer::advanceMIDITicks(midi_tick_t ticks) -> void {
+	midiFile.advanceTicks(ticks);
+}
 auto NSFPlayer::createMIDITrack() -> shared_pointer<MIDIDevice> {
 	return midiFile.createTrack();
 }

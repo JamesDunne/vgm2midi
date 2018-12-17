@@ -56,6 +56,8 @@ auto APU::main() -> void {
   output += cartridgeSample;
   stream->sample(output);
 
+  platform->advanceMIDITicks(1);
+
   tick();
 }
 
@@ -88,6 +90,8 @@ auto APU::power(bool reset) -> void {
   triangle.power();
   noise.power();
   dmc.power();
+
+  midiTick = 0;
 
   frame.irqPending = 0;
 
