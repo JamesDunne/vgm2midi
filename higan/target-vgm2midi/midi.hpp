@@ -25,7 +25,7 @@ private:
 };
 
 struct MIDIFile {
-  vector<MTrk> tracks;
+  vector<MTrk*> tracks;
 
   auto createTrack() -> shared_pointer<MTrk>;
 

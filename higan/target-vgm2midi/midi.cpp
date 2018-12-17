@@ -2,13 +2,14 @@
 // MIDIFile:
 
 auto MIDIFile::createTrack() -> shared_pointer<MTrk> {
-  tracks.resize(tracks.size() + 1);
-  return &tracks[tracks.size() - 1];
+  auto mtrk = new MTrk;
+  tracks.append(mtrk);
+  return mtrk;
 }
 
 auto MIDIFile::setTick(midi_tick_t tick) -> void {
   for (auto track : tracks) {
-    track.setTick(tick);
+    track->setTick(tick);
   }
 }
 
@@ -16,7 +17,7 @@ auto MIDIFile::tick() -> midi_tick_t const {
   if (tracks.size() == 0) return 0;
 
   // All tracks should have same tick:
-  return tracks[0].tick();
+  return tracks[0]->tick();
 }
 
 auto MIDIFile::save(string path) -> void const {
@@ -35,8 +36,8 @@ auto MIDIFile::save(string path) -> void const {
   for (auto track : tracks) {
     buf.write({"MTrk", 4});
     // MTrk length:
-    buf.writem(track.bytes.size(), 4);
-    buf.write(track.bytes);
+    buf.writem(track->bytes.size(), 4);
+    buf.write(track->bytes);
   }
 
   buf.close();

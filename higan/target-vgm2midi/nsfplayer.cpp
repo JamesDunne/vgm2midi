@@ -271,7 +271,8 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	wave.seek(header_size);
 	samples = 0;
 
-	const long play_seconds = 4 * 60;
+	const long play_seconds = 0 * 60 + 30;
+	// const long play_seconds = 4 * 60;
 	// const long play_seconds = 2 * 60 + 30;
 
 	int plays = 0;
@@ -339,4 +340,7 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	wave.write({header, header_size});
 
 	wave.close();
+
+	// Save MIDI output:
+	midiFile.save("out.mid");
 }
