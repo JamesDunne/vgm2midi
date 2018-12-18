@@ -17,7 +17,12 @@ auto APU::Triangle::clockLinearLength() -> void {
 auto APU::Triangle::clock() -> uint8 {
   uint8 result = stepCounter & 0x0f;
   if((stepCounter & 0x10) == 0) result ^= 0x0f;
-  if(lengthCounter == 0 || linearLengthCounter == 0) return result;
+  if(lengthCounter == 0 || linearLengthCounter == 0 || (period+1 < 3)) {
+    midiNoteOff();
+    return result;
+  }
+
+  midiNoteOn();
 
   if(--periodCounter == 0) {
     stepCounter++;
