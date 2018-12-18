@@ -37,7 +37,10 @@ auto APU::Pulse::clock() -> uint8 {
       }
     }
     midiNoteOn();
+  } else if (volume == 0) {
+    midiNoteOff();
   }
+
   lastEnvelopeVolume = volume;
 
   if(--periodCounter == 0) {
