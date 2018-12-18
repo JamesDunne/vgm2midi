@@ -10,8 +10,13 @@ auto APU::Noise::clock() -> uint8 {
     return 0;
   }
 
-  uint8 result = (lfsr & 1) ? envelope.volume() : 0;
-  midiNoteOn();
+  auto volume = envelope.volume();
+  uint8 result = (lfsr & 1) ? volume : 0;
+  if (volume > 0) {
+    midiNoteOn();
+  } else {
+    midiNoteOff();
+  }
 
   if(--periodCounter == 0) {
     uint feedback;
