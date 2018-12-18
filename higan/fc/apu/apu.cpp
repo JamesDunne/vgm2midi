@@ -362,7 +362,7 @@ auto APU::loadMidiSupport(Markup::Node document) -> void {
     auto midiProgram = nr["midiProgram"].natural();
     auto midiNote = nr["midiNote"].natural();
 
-    print("dmc map sample={0} midiChannel={1}\n", string_format{sample, midiChannel});
+    // print("dmc map sample={0} midiChannel={1}\n", string_format{sample, midiChannel});
 
     auto tm = dmc.sampleMidiMap.find(sample);
     if (!tm) {

@@ -2,6 +2,7 @@ auto APU::DMC::start() -> void {
   if(lengthCounter == 0) {
     readAddr = 0x4000 + (addrLatch << 6);
     lengthCounter = (lengthLatch << 4) + 1;
+    midiNoteOff();
     midiNoteOn();
   }
 }
@@ -34,9 +35,12 @@ auto APU::DMC::clock() -> uint8 {
       if(lengthCounter == 0) {
         if(loopMode) {
           start();
-        } else if(irqEnable) {
-          irqPending = true;
-          apu.setIRQ();
+        } else {
+          midiNoteOff();
+          if(irqEnable) {
+            irqPending = true;
+            apu.setIRQ();
+          }
         }
       }
     }
