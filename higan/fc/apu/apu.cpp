@@ -56,7 +56,11 @@ auto APU::main() -> void {
   output += cartridgeSample;
   stream->sample(output);
 
-  platform->advanceMIDITicks(1);
+  // Advance MIDI tick when enough APU cycles have elapsed:
+  if (++midiTickCycle >= cyclesPerMidiTick) {
+    midiTickCycle = 0;
+    platform->advanceMIDITicks(1);
+  }
 
   tick();
 }
@@ -91,7 +95,11 @@ auto APU::power(bool reset) -> void {
   noise.power();
   dmc.power();
 
-  midiTick = 0;
+  // cycles |  60 seconds |   1 minutes |   1 beats
+  // -------+-------------+-------------+----------
+  // second |   1 minutes | 120 beats   | 480 ticks  
+  cyclesPerMidiTick = (frequency() / rate()) * 60.0 / (midiTempo * midiTicksPerBeat);
+  midiTickCycle = 0;
 
   frame.irqPending = 0;
 

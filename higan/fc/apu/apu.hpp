@@ -184,7 +184,11 @@ struct APU : Thread {
   double pulseDAC[32];
   double dmcTriangleNoiseDAC[128][16][16];
 
-  uint midiTick;
+  uint cyclesPerMidiTick;
+  uint midiTickCycle;
+
+  const double midiTempo = 120.0;
+  const uint   midiTicksPerBeat = 480;
 
   static const uint8 lengthCounterTable[32];
   static const uint16 dmcPeriodTableNTSC[16];
