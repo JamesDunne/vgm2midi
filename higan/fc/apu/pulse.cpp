@@ -22,14 +22,20 @@ auto APU::Pulse::clock() -> uint8 {
     {0, 0, 0, 0, 1, 1, 1, 1},  //50.0%
     {1, 1, 1, 1, 1, 1, 0, 0},  //25.0% (negated)
   };
-  uint8 result = dutyTable[duty][dutyCounter] ? envelope.volume() : 0;
+
+  auto volume = envelope.volume();
+  uint8 result = dutyTable[duty][dutyCounter] ? volume : 0;
   if(sweep.pulsePeriod < 0x008) {
     midiNoteOff();
     result = 0;
-  } else if (midiTrigger || lastClock == 0) {
-    midiTrigger = false;
+  } else if (volume > 0) {
+    if (envelope.midiTrigger || volume > lastEnvelopeVolume) {
+      envelope.midiTrigger = false;
+      midiNoteOff();
+    }
     midiNoteOn();
   }
+  lastEnvelopeVolume = volume;
 
   if(--periodCounter == 0) {
     periodCounter = (sweep.pulsePeriod + 1) * 2;
@@ -54,16 +60,16 @@ auto APU::Pulse::power() -> void {
   midi = platform->createMIDITrack();
 
   lastClock = 0;
-  midiTrigger = false;
 }
 
 auto APU::Pulse::midiProgram() -> uint7 {
-  // Synth leads start at 80 with square wave (these are 1-based program numbers)
-  // 81 Lead 1 (square)
-  // 82 Lead 2 (sawtooth)
-  // 83 Lead 3 (calliope)
-  // 84 Lead 4 (chiff)
-  return 80 + duty;
+  switch (duty) {
+    case 0: return 80; // 81 Lead 1 (square)
+    case 1: return 81; // 82 Lead 2 (sawtooth)
+    case 2: return 82; // 83 Lead 3 (calliope)
+    case 3: return 29; // 30 Overdriven Guitar
+    default: return 80;
+  }
 }
 
 auto APU::Pulse::midiChannel() -> uint4 {

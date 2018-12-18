@@ -181,11 +181,9 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
 
     pulse[n].dutyCounter = 0;
     pulse[n].envelope.reloadDecay = true;
-    pulse[n].midiNoteOff();
 
     if(enabledChannels & (1 << n)) {
       pulse[n].lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
-      pulse[n].midiTrigger = true;
     }
     return;
   }

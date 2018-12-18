@@ -37,6 +37,8 @@ struct APU : Thread {
     uint4 decayVolume;
 
     auto midiVolume() -> uint7;
+
+    bool midiTrigger;
   };
 
   struct Sweep {
@@ -62,7 +64,7 @@ struct APU : Thread {
     auto clock() -> uint8;
 
     auto power() -> void;
-
+ 
     auto serialize(serializer&) -> void;
 
     uint lengthCounter;
@@ -78,7 +80,7 @@ struct APU : Thread {
 
     uint n; // which pulse (0, 1) is this
     uint8 lastClock;
-    bool midiTrigger;
+    uint  lastEnvelopeVolume;
 
     virtual auto midiProgram() -> uint7 override;
     virtual auto midiChannel() -> uint4 override;
