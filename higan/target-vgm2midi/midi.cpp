@@ -8,9 +8,14 @@ auto MIDIFile::createTrack() -> shared_pointer<MTrk> {
 }
 
 auto MIDIFile::advanceTicks(midi_tick_t ticks) -> void {
+  tick_abs += ticks;
   for (auto track: tracks) {
     track->advanceTicks(ticks);
   }
+}
+
+auto MIDIFile::tick() -> midi_tick_t const {
+  return tick_abs;
 }
 
 auto MIDIFile::save(string path) -> void const {
@@ -41,6 +46,11 @@ auto MIDIFile::save(string path) -> void const {
 
 auto MTrk::advanceTicks(midi_tick_t ticks) -> void {
   tick_ += ticks;
+  tick_abs += ticks;
+}
+
+auto MTrk::tick() -> midi_tick_t const {
+  return tick_abs;
 }
 
 auto MTrk::writeVarint(uint value) -> void {
@@ -99,10 +109,6 @@ auto MTrk::meta(uint7 event, const array_view<uint8_t> data) -> void {
   bytes.appends(data);
 }
 
-auto MTrk::note(uint4 channel) -> maybe<uint7> {
-  return nothing;
-  // return file.channels[channel].note;
-}
 auto MTrk::control(uint4 channel, uint7 control) -> maybe<uint7> {
   return file.channels[channel].control[control];
 }
@@ -114,25 +120,17 @@ auto MTrk::pitchBend(uint4 channel) -> maybe<uint14> {
 }
 
 auto MTrk::noteOff(uint4 channel, uint7 note, uint7 velocity) -> void {
-  // if (!file.channels[channel].note) return;
-
   writeTickDelta();
   bytes.append(0x80 | channel);
   bytes.append(note);
   bytes.append(velocity);
-
-  // file.channels[channel].note = nothing;
 }
 
 auto MTrk::noteOn(uint4 channel, uint7 note, uint7 velocity) -> void {
-  // if (file.channels[channel].note && file.channels[channel].note() == note) return;
-
   writeTickDelta();
   bytes.append(0x90 | channel);
   bytes.append(note);
   bytes.append(velocity);
-
-  // file.channels[channel].note = note;
 }
 
 auto MTrk::keyPressureChange(uint4 channel, uint7 note, uint7 velocity) -> void {
