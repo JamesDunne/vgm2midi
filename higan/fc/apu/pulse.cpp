@@ -52,6 +52,9 @@ auto APU::Pulse::power() -> void {
   periodCounter = 1;
 
   midi = platform->createMIDITrack();
+  for (auto c : range(4)) {
+    midi->programChange(4 * n + c, 80 + c);
+  }
 
   lastClock = 0;
   midiTrigger = false;
@@ -59,6 +62,13 @@ auto APU::Pulse::power() -> void {
 
 auto APU::Pulse::midiChannel() -> uint4 {
   return 4 * n + duty;
+}
+
+auto APU::Pulse::midiChannelVolume() -> uint7 {
+  auto x = envelope.volume();
+
+  if (x == 0) return 0;
+  return 15 + (uint)((112.0/0.15)*95.88/((8128.0/x)+100.0));
 }
 
 auto APU::Pulse::midiNote() -> double {

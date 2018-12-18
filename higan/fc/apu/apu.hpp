@@ -79,6 +79,7 @@ struct APU : Thread {
     bool midiTrigger;
 
     virtual auto midiChannel() -> uint4 override;
+    virtual auto midiChannelVolume() -> uint7 override;
     virtual auto midiNote() -> double override;
   } pulse[2];
 
@@ -104,6 +105,7 @@ struct APU : Thread {
     bool reloadLinear;
 
     virtual auto midiChannel() -> uint4 override;
+    virtual auto midiChannelVolume() -> uint7 override;
     virtual auto midiNote() -> double override;
   } triangle;
 
