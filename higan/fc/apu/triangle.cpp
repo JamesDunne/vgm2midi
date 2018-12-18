@@ -46,9 +46,6 @@ auto APU::Triangle::midiChannel() -> uint4 {
 }
 
 auto APU::Triangle::midiNote() -> double {
-  double f = system.frequency() / (16 * (period + 1));
-  double n = (log(f / 54.99090178) / log(2)) * 12;
-
   // MIDI 21 = A 1
-  return n + 21;
+  return apu.periodMidi[period] + 21;
 }

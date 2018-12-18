@@ -86,6 +86,8 @@ auto APU::power(bool reset) -> void {
   stream->addFilter(Emulator::Filter::Order::First, Emulator::Filter::Type::LowPass, 14000.0);
   stream->enableFilterDCOffset();
 
+  sampleRate = (frequency() / rate());
+
   pulse[0].n = 0;
   pulse[1].n = 1;
 
@@ -98,8 +100,16 @@ auto APU::power(bool reset) -> void {
   // cycles |  60 seconds |   1 minutes |   1 beats
   // -------+-------------+-------------+----------
   // second |   1 minutes | 120 beats   | 480 ticks  
-  cyclesPerMidiTick = (frequency() / rate()) * 60.0 / (midiTempo * midiTicksPerBeat);
+  cyclesPerMidiTick = sampleRate * 60.0 / (midiTempo * midiTicksPerBeat);
+
   midiTickCycle = 0;
+
+  for (auto p : range(0x800)) {
+    double f = sampleRate / (16 * (p + 1));
+    double n = (log(f / 54.99090178) / log(2)) * 12;
+
+    periodMidi[p] = n;
+  }
 
   frame.irqPending = 0;
 
@@ -175,7 +185,8 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     if(enabledChannels & (1 << n)) {
       pulse[n].lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
       pulse[n].midiNoteOff();
-      pulse[n].midiNoteOn();
+      pulse[n].midiTrigger = true;
+      // Note ON will be done once dutyCounter falls to 0.
     }
     return;
   }

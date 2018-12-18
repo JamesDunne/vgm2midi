@@ -75,6 +75,8 @@ struct APU : Thread {
     uint periodCounter;
 
     uint n; // which pulse (0, 1) is this
+    uint8 lastClock;
+    bool midiTrigger;
 
     virtual auto midiChannel() -> uint4 override;
     virtual auto midiNote() -> double override;
@@ -186,6 +188,10 @@ struct APU : Thread {
 
   uint cyclesPerMidiTick;
   uint midiTickCycle;
+
+  double sampleRate;
+
+  double periodMidi[0x800];
 
   const double midiTempo = 120.0;
   const uint   midiTicksPerBeat = 480;
