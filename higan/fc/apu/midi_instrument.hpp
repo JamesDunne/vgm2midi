@@ -22,10 +22,11 @@ struct MIDIMelodic : MIDIInstrument {
   virtual auto midiNoteOff() -> void override;
 
   maybe<double> lastMidiNote;
+  maybe<midi_tick_t> lastMidiNoteTick;
   maybe<uint4> lastMidiChannel;
 };
 
 struct MIDIRhythmic : MIDIMelodic {
-  virtual auto midiProgram() -> uint7 { return 0; };
-  virtual auto midiChannel() -> uint4 { return 9; };
+  virtual auto midiProgram() -> uint7 override { return 0; };
+  virtual auto midiChannel() -> uint4 override { return 9; };
 };

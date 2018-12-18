@@ -31,7 +31,10 @@ auto APU::Pulse::clock() -> uint8 {
   } else if (volume > 0) {
     if (envelope.midiTrigger || volume > lastEnvelopeVolume) {
       envelope.midiTrigger = false;
-      midiNoteOff();
+      // Gate envelope swells to avoid machinegun effect:
+      if (lastMidiNote && ((lastMidiNote() != midiNote()) || (midi->tick() - lastMidiNoteTick() >= 0x10))) {
+        midiNoteOff();
+      }
     }
     midiNoteOn();
   }

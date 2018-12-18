@@ -129,13 +129,13 @@ auto APU::DMC::midiNote() -> double {
 
   auto note = sm().periodMidiNote.find(period);
   if (!note) {
-    // MIDI Channel prefix:
-    vector<uint8_t> mcp;
-    mcp.appendm(midiChannel(), 1);
-    midi->meta(0x20, mcp);
-    // Instrumentation note:
-    auto fmt = string("dmc sample=0x{0} period=0x{1}").format(string_format{hex(addrLatch, 2), hex(period, 2)});
-    midi->meta(0x04, fmt);
+    // // MIDI Channel prefix:
+    // vector<uint8_t> mcp;
+    // mcp.appendm(midiChannel(), 1);
+    // midi->meta(0x20, mcp);
+    // // Instrumentation note:
+    // auto fmt = string("dmc sample=0x{0} period=0x{1}").format(string_format{hex(addrLatch, 2), hex(period, 2)});
+    // midi->meta(0x04, fmt);
     return sm().midiNote;
   }
 

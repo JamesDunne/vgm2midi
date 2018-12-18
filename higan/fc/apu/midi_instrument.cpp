@@ -34,6 +34,7 @@ auto MIDIMelodic::midiNoteOn() -> void {
 
     // Note ON:
     midi->noteOn(newMidiChannel, m, midiNoteVelocity());
+    lastMidiNoteTick = midi->tick();
     lastMidiChannel = newMidiChannel;
     lastMidiNote = m;
   } else if (lastMidiChannel) {
