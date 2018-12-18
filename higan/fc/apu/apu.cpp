@@ -231,7 +231,6 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
 
     if(enabledChannels & (1 << 3)) {
       noise.lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
-      noise.midiNoteOn();
     }
     return;
   }

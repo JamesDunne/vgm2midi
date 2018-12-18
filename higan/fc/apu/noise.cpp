@@ -13,15 +13,10 @@ auto APU::Noise::clock() -> uint8 {
   auto volume = envelope.volume();
   uint8 result = (lfsr & 1) ? volume : 0;
 
-  if (envelope.volume() > lastEnvelopeVolume) {
-    // OK to start a new note since its volume is higher than previous:
-    midiNoteOff();
+  if (volume > 0) {
     midiNoteOn();
   }
 
-  // if (volume > 0) {
-  //   midiNoteOn();
-  // }
   lastEnvelopeVolume = volume;
 
   if(--periodCounter == 0) {
@@ -58,6 +53,7 @@ auto APU::Noise::power() -> void {
   midi = platform->createMIDITrack();
 
   lastEnvelopeVolume = 0;
+  lastMidiNoteVelocity = 0;
 }
 
 auto APU::Noise::midiNote() -> double {
@@ -83,4 +79,34 @@ auto APU::Noise::midiNote() -> double {
 
 auto APU::Noise::midiNoteVelocity() -> uint7 {
   return envelope.midiVolume();
+}
+
+auto APU::Noise::midiNoteOn() -> void {
+  auto n = midiNote();
+  auto m = round(n);
+  auto newMidiChannel = midiChannel();
+  auto newChannelVolume = midiChannelVolume();
+  auto newMidiNoteVelocity = midiNoteVelocity();
+
+  if (!lastMidiNote || m != round(lastMidiNote()) || newMidiNoteVelocity > lastMidiNoteVelocity) {
+    midiNoteOff();
+
+    // Update channel volume:
+    midi->controlChange(newMidiChannel, 0x07, newChannelVolume);
+
+    // Change program:
+    midi->programChange(newMidiChannel, midiProgram());
+
+    // Note ON:
+    midi->noteOn(newMidiChannel, m, midiNoteVelocity());
+
+    lastMidiChannel = newMidiChannel;
+    lastMidiNote = m;
+  } else if (lastMidiChannel) {
+    // Update last channel played on's volume since we don't really support switching
+    // duty cycle without restarting the note (i.e. playing it across multiple channels).
+    midi->controlChange(lastMidiChannel(), 0x07, newChannelVolume);
+  }
+
+  lastMidiNoteVelocity = newMidiNoteVelocity;
 }
