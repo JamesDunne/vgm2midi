@@ -55,7 +55,14 @@ auto APU::Noise::midiNote() -> double {
 
   auto note = periodMidiNote.find(p);
   if (!note) {
-    return 32 + p;
+    // MIDI Channel prefix:
+    vector<uint8_t> mcp;
+    mcp.appendm(9, 1);
+    midi->meta(0x20, mcp);
+    // Instrumentation note:
+    auto fmt = string("noise period=0x{0}").format(string_format{hex(period, 2)});
+    midi->meta(0x04, fmt);
+    return p;
   }
 
   return note();

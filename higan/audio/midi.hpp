@@ -25,7 +25,7 @@ struct MIDIDevice {
   virtual auto program(uint4 channel) -> maybe<uint7> = 0;
   virtual auto pitchBend(uint4 channel) -> maybe<uint14> = 0;
 
-  virtual auto meta(uint7 event, const vector<uint8_t> &data) -> void {};
+  virtual auto meta(uint7 event, const array_view<uint8_t> data) -> void {};
 
   struct Null;
 };

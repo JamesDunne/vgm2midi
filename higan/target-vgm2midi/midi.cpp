@@ -89,7 +89,7 @@ auto MTrk::writeTickDelta() -> void {
   tick_ = 0;
 }
 
-auto MTrk::meta(uint7 event, const vector<uint8_t> &data) -> void {
+auto MTrk::meta(uint7 event, const array_view<uint8_t> data) -> void {
   writeTickDelta();
 
   bytes.append(0xFF);

@@ -19,7 +19,7 @@ struct MTrk : MIDIDevice {
   virtual auto program(uint4 channel) -> maybe<uint7> override;
   virtual auto pitchBend(uint4 channel) -> maybe<uint14> override;
 
-  virtual auto meta(uint7 event, const vector<uint8_t> &data) -> void override;
+  virtual auto meta(uint7 event, const array_view<uint8_t> data) -> void override;
 
 private:
   MIDIFile& file;
