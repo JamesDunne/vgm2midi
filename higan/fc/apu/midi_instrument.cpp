@@ -1,5 +1,8 @@
 
 auto MIDIMelodic::midiNoteOff() -> void {
+  if (!lastMidiNote || !lastMidiChannel) return;
+
+  midi->noteOff(lastMidiChannel(), lastMidiNote(), 0);
 }
 
 auto MIDIMelodic::midiNoteOn() -> void {
