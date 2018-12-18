@@ -12,11 +12,17 @@ auto APU::Noise::clock() -> uint8 {
 
   auto volume = envelope.volume();
   uint8 result = (lfsr & 1) ? volume : 0;
-  if (volume > 0) {
-    midiNoteOn();
-  } else {
+
+  if (envelope.volume() > lastEnvelopeVolume) {
+    // OK to start a new note since its volume is higher than previous:
     midiNoteOff();
+    midiNoteOn();
   }
+
+  // if (volume > 0) {
+  //   midiNoteOn();
+  // }
+  lastEnvelopeVolume = volume;
 
   if(--periodCounter == 0) {
     uint feedback;
@@ -50,6 +56,8 @@ auto APU::Noise::power() -> void {
   lfsr = 1;
 
   midi = platform->createMIDITrack();
+
+  lastEnvelopeVolume = 0;
 }
 
 auto APU::Noise::midiNote() -> double {

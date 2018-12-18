@@ -181,12 +181,11 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
 
     pulse[n].dutyCounter = 0;
     pulse[n].envelope.reloadDecay = true;
+    pulse[n].midiNoteOff();
 
     if(enabledChannels & (1 << n)) {
       pulse[n].lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
-      pulse[n].midiNoteOff();
       pulse[n].midiTrigger = true;
-      // Note ON will be done once dutyCounter falls to 0.
     }
     return;
   }
@@ -206,6 +205,7 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     triangle.period = (triangle.period & 0x00ff) | (data << 8);
 
     triangle.reloadLinear = true;
+    triangle.midiNoteOff();
 
     if(enabledChannels & (1 << 2)) {
       triangle.lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
@@ -231,6 +231,7 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
 
     if(enabledChannels & (1 << 3)) {
       noise.lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
+      noise.midiNoteOn();
     }
     return;
   }
