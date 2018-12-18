@@ -3,6 +3,7 @@ auto MIDIMelodic::midiNoteOff() -> void {
   if (!lastMidiNote || !lastMidiChannel) return;
 
   midi->noteOff(lastMidiChannel(), lastMidiNote(), 0);
+  lastMidiNote = nothing;
 }
 
 auto MIDIMelodic::midiNoteOn() -> void {
