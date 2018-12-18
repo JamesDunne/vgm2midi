@@ -380,7 +380,7 @@ auto APU::loadMidiSupport(Markup::Node document) -> void {
     }
 
     if (nr["period"]) {
-      tm().periodMidiNote.insert(nr["period"].natural(), nr["midiNote"].natural());
+      tm().periodMidiNote.insert(nr["period"].natural(), midiNote);
     }
   }
 }

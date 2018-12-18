@@ -3,6 +3,7 @@ auto MIDIMelodic::midiNoteOff() -> void {
   if (!lastMidiNote || !lastMidiChannel) return;
 
   midi->noteOff(lastMidiChannel(), lastMidiNote(), 0);
+
   lastMidiNote = nothing;
 }
 
@@ -20,7 +21,7 @@ auto MIDIMelodic::midiNoteOn() -> void {
     // Update channel volume:
     midi->controlChange(newMidiChannel, 0x07, newChannelVolume);
 
-    if (midiPitchBendEnabled()) {
+    if (newMidiChannel != 9) {
       // Reset pitch bend if within a tolerance of a concert pitch:
       if (abs(n - m) < 0.0625) {
         // Reset pitch bend to 0:
@@ -41,7 +42,7 @@ auto MIDIMelodic::midiNoteOn() -> void {
     midi->controlChange(lastMidiChannel(), 0x07, newChannelVolume);
   }
 
-  if (midiPitchBendEnabled() && lastMidiNote) {
+  if (lastMidiChannel() != 9 && lastMidiNote) {
     // Period is changing too finely for MIDI note to change:
     if (abs(n - lastMidiNote()) >= 0.0625) {
       // Emit pitch wheel change:

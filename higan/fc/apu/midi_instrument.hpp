@@ -6,7 +6,6 @@ struct MIDIInstrument {
 
   virtual auto midiNote() -> double = 0;
   virtual auto midiNoteVelocity() -> uint7 { return 64; };
-  virtual auto midiPitchBendEnabled() -> bool { return midiChannel() != 9; };
 
   virtual auto midiChannel() -> uint4 = 0;
   virtual auto midiChannelVolume() -> uint7 { return 64; };
