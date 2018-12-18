@@ -253,6 +253,13 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 
 	nsf->song_index = track;
 
+	auto supFilename = filename.trimRight(".nsf").append(".v2m");
+	// print(supFilename, "\n");
+	auto sup = file::open(supFilename, file::mode::read);
+    auto supDocument = sup.reads(sup.size());
+	sup.close();
+	apu->loadMidiSupport(BML::unserialize(supDocument));
+
 	// Clear RAM to 00:
 	for (auto& data : cpu->ram) data = 0x00;
 
@@ -275,8 +282,8 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	wave.seek(header_size);
 	samples = 0;
 
-	const long play_seconds = 0 * 60 + 45;
-	// const long play_seconds = 4 * 60;
+	// const long play_seconds = 0 * 60 + 45;
+	const long play_seconds = 4 * 60;
 	// const long play_seconds = 2 * 60 + 30;
 
 	int plays = 0;

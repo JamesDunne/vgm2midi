@@ -5,9 +5,13 @@ auto APU::Noise::clockLength() -> void {
 }
 
 auto APU::Noise::clock() -> uint8 {
-  if(lengthCounter == 0) return 0;
+  if(lengthCounter == 0) {
+    midiNoteOff();
+    return 0;
+  }
 
   uint8 result = (lfsr & 1) ? envelope.volume() : 0;
+  midiNoteOn();
 
   if(--periodCounter == 0) {
     uint feedback;
@@ -44,5 +48,19 @@ auto APU::Noise::power() -> void {
 }
 
 auto APU::Noise::midiNote() -> double {
-  return 32;
+  uint5 p = period;
+  if (shortMode) {
+    p |= 0x10;
+  }
+
+  auto note = periodMidiNote.find(p);
+  if (!note) {
+    return 32 + p;
+  }
+
+  return note();
+}
+
+auto APU::Noise::midiNoteVelocity() -> uint7 {
+  return envelope.midiVolume();
 }

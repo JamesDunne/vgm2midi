@@ -24,3 +24,10 @@ auto APU::Envelope::power() -> void {
   decayCounter = 0;
   decayVolume = 0;
 }
+
+auto APU::Envelope::midiVolume() -> uint7 {
+  auto x = volume();
+
+  if (x == 0) return 0;
+  return 15 + (uint)((112.0/0.15)*95.88/((8128.0/x)+100.0));
+}

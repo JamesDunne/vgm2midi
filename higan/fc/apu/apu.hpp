@@ -35,6 +35,8 @@ struct APU : Thread {
     bool reloadDecay;
     uint8 decayCounter;
     uint4 decayVolume;
+
+    auto midiVolume() -> uint7;
   };
 
   struct Sweep {
@@ -128,6 +130,9 @@ struct APU : Thread {
     uint15 lfsr;
 
     virtual auto midiNote() -> double override;
+    virtual auto midiNoteVelocity() -> uint7 override;
+
+    map<uint5, uint7> periodMidiNote;
   } noise;
 
   struct DMC : MIDIRhythmic {
@@ -162,7 +167,17 @@ struct APU : Thread {
     bool sampleValid;
     uint8 sample;
 
+    virtual auto midiChannel() -> uint4 override;
     virtual auto midiNote() -> double override;
+
+    struct targetMidi {
+      uint4 midiChannel;
+      uint7 midiNote;
+      // period to midiNote on midiChannel (else use midiNote):
+      map<uint4, uint7> periodMidiNote;
+    };
+
+    map<uint8, targetMidi> sampleMidiMap;
   } dmc;
 
   struct FrameCounter {
@@ -197,6 +212,8 @@ struct APU : Thread {
 
   const double midiTempo = 120.0;
   const uint   midiTicksPerBeat = 480;
+
+  auto loadMidiSupport(Markup::Node document) -> void;
 
   static const uint8 lengthCounterTable[32];
   static const uint16 dmcPeriodTableNTSC[16];

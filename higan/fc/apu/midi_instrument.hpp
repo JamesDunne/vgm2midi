@@ -25,8 +25,6 @@ struct MIDIMelodic : MIDIInstrument {
   maybe<uint4> lastMidiChannel;
 };
 
-struct MIDIRhythmic : MIDIInstrument {
+struct MIDIRhythmic : MIDIMelodic {
   virtual auto midiChannel() -> uint4 { return 9; };
-  virtual auto midiNoteOn() -> void override;
-  virtual auto midiNoteOff() -> void override;
 };

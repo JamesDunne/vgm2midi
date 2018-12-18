@@ -2,10 +2,12 @@ auto APU::DMC::start() -> void {
   if(lengthCounter == 0) {
     readAddr = 0x4000 + (addrLatch << 6);
     lengthCounter = (lengthLatch << 4) + 1;
+    midiNoteOn();
   }
 }
 
 auto APU::DMC::stop() -> void {
+  midiNoteOff();
   lengthCounter = 0;
   dmaDelayCounter = 0;
   cpu.rdyLine(1);
@@ -90,6 +92,25 @@ auto APU::DMC::power() -> void {
   midi = platform->createMIDITrack();
 }
 
+auto APU::DMC::midiChannel() -> uint4 {
+  auto sm = sampleMidiMap.find(sample);
+  if (!sm) {
+    return 9;
+  }
+
+  return sm().midiChannel;
+}
+
 auto APU::DMC::midiNote() -> double {
-  return 32;
+  auto sm = sampleMidiMap.find(sample);
+  if (!sm) {
+    return 32 + period;
+  }
+
+  auto note = sm().periodMidiNote.find(period);
+  if (!note) {
+    return sm().midiNote;
+  }
+
+  return note();
 }

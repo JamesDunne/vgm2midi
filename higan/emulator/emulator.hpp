@@ -18,6 +18,7 @@
 #include <nall/vfs.hpp>
 #include <nall/hash/crc32.hpp>
 #include <nall/hash/sha256.hpp>
+#include <nall/map.hpp>
 using namespace nall;
 
 #include "types.hpp"

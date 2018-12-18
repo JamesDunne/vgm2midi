@@ -46,9 +46,3 @@ auto MIDIMelodic::midiNoteOn() -> void {
     }
   }
 }
-
-auto MIDIRhythmic::midiNoteOff() -> void {
-}
-
-auto MIDIRhythmic::midiNoteOn() -> void {
-}

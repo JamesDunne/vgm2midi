@@ -345,4 +345,40 @@ const uint16 APU::dmcPeriodTablePAL[16] = {
   398, 354, 316, 298, 276, 236, 210, 198, 176, 148, 132, 118,  98, 78, 66, 50,
 };
 
+auto APU::loadMidiSupport(Markup::Node document) -> void {
+  for (auto nr : document["noise"]) {
+    auto period = nr["period"].natural();
+    auto midiNote = nr["midiNote"].natural();
+    print("noise map period={0} midiNote={1}\n", string_format{period, midiNote});
+    noise.periodMidiNote.insert(
+      period,
+      midiNote
+    );
+  }
+
+  for (auto nr : document["dmc"]) {
+    auto sample = nr["sample"].natural();
+    auto midiChannel = nr["midiChannel"].natural() - 1;
+    print("dmc map sample={0} midiChannel={1}\n", string_format{sample, midiChannel});
+
+    auto tm = dmc.sampleMidiMap.find(sample);
+    if (!tm) {
+      dmc.sampleMidiMap.insert(
+        sample,
+        {
+          midiChannel: nr["midiChannel"].natural() - 1,
+          // TODO: initialize midiNote when period is set?
+          midiNote: nr["midiNote"].natural()
+        }
+      );
+
+      tm = dmc.sampleMidiMap.find(sample);
+    }
+
+    if (nr["period"]) {
+      tm().periodMidiNote.insert(nr["period"].natural(), nr["midiNote"].natural());
+    }
+  }
+}
+
 }
