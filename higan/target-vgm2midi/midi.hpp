@@ -2,7 +2,9 @@
 struct MIDIFile;
 
 struct MTrk : MIDIDevice {
-  MTrk(MIDIFile& file_) : file(file_) {}
+  MTrk(MIDIFile& file_) : file(file_) {
+    tick_ = 0;
+  }
 
   virtual auto noteOff(uint4 channel, uint7 note, uint7 velocity) -> void override;
   virtual auto noteOn(uint4 channel, uint7 note, uint7 velocity) -> void override;

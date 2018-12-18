@@ -44,31 +44,41 @@ auto MTrk::advanceTicks(midi_tick_t ticks) -> void {
 }
 
 auto MTrk::writeVarint(uint value) -> void {
-  uint8 chr1 = (uint8)(value & 0x7F);
+  uint8_t chr1 = (uint8_t)(value & 0x7F);
   value >>= 7;
   if (value > 0) {
-    uint8 chr2 = (uint8)((value & 0x7F) | 0x80);
+    uint8_t chr2 = (uint8_t)((value & 0x7F) | 0x80);
     value >>= 7;
     if (value > 0) {
-      uint8 chr3 = (uint8)((value & 0x7F) | 0x80);
+      uint8_t chr3 = (uint8_t)((value & 0x7F) | 0x80);
       value >>= 7;
       if (value > 0) {
-        uint8 chr4 = (uint8)((value & 0x7F) | 0x80);
+        uint8_t chr4 = (uint8_t)((value & 0x7F) | 0x80);
 
+        assert((chr4 & 0x80) == 0x80);
         bytes.append(chr4);
+        assert((chr3 & 0x80) == 0x80);
         bytes.append(chr3);
+        assert((chr2 & 0x80) == 0x80);
         bytes.append(chr2);
+        assert((chr1 & 0x80) == 0x00);
         bytes.append(chr1);
       } else {
+        assert((chr3 & 0x80) == 0x80);
         bytes.append(chr3);
+        assert((chr2 & 0x80) == 0x80);
         bytes.append(chr2);
+        assert((chr1 & 0x80) == 0x00);
         bytes.append(chr1);
       }
     } else {
+      assert((chr2 & 0x80) == 0x80);
       bytes.append(chr2);
+      assert((chr1 & 0x80) == 0x00);
       bytes.append(chr1);
     }
   } else {
+    assert((chr1 & 0x80) == 0x00);
     bytes.append(chr1);
   }
 }
@@ -167,7 +177,7 @@ auto MTrk::pitchBendChange(uint4 channel, uint14 pitchBend) -> void {
   writeTickDelta();
   bytes.append(0xE0 | channel);
   bytes.append(pitchBend & 0x7F);
-  bytes.append(pitchBend >> 7);
+  bytes.append((pitchBend >> 7) & 0x7F);
 
   file.channels[channel].pitchBend = pitchBend;
 }
