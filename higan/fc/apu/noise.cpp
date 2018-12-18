@@ -60,7 +60,7 @@ auto APU::Noise::midiNote() -> double {
     mcp.appendm(9, 1);
     midi->meta(0x20, mcp);
     // Instrumentation note:
-    auto fmt = string("noise period=0x{0}").format(string_format{hex(period, 2)});
+    auto fmt = string("noise period=0x{0}").format(string_format{hex(p, 2)});
     midi->meta(0x04, fmt);
     return p;
   }
