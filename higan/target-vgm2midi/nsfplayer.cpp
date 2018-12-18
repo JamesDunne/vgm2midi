@@ -282,8 +282,8 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	wave.seek(header_size);
 	samples = 0;
 
-	// const long play_seconds = 0 * 60 + 45;
-	const long play_seconds = 4 * 60;
+	const long play_seconds = 0 * 60 + 58;
+	// const long play_seconds = 4 * 60;
 	// const long play_seconds = 2 * 60 + 30;
 
 	int plays = 0;

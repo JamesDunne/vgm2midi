@@ -27,6 +27,9 @@ auto MIDIMelodic::midiNoteOn() -> void {
       }
     }
 
+    // Change program:
+    midi->programChange(newMidiChannel, midiProgram());
+
     // Note ON:
     midi->noteOn(newMidiChannel, m, midiNoteVelocity());
     lastMidiChannel = newMidiChannel;

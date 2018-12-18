@@ -80,6 +80,7 @@ struct APU : Thread {
     uint8 lastClock;
     bool midiTrigger;
 
+    virtual auto midiProgram() -> uint7 override;
     virtual auto midiChannel() -> uint4 override;
     virtual auto midiChannelVolume() -> uint7 override;
     virtual auto midiNote() -> double override;
@@ -106,6 +107,7 @@ struct APU : Thread {
     uint8 linearLengthCounter;
     bool reloadLinear;
 
+    virtual auto midiProgram() -> uint7 override;
     virtual auto midiChannel() -> uint4 override;
     virtual auto midiChannelVolume() -> uint7 override;
     virtual auto midiNote() -> double override;
@@ -167,12 +169,15 @@ struct APU : Thread {
     bool sampleValid;
     uint8 sample;
 
+    virtual auto midiProgram() -> uint7 override;
     virtual auto midiChannel() -> uint4 override;
     virtual auto midiNote() -> double override;
 
     struct targetMidi {
       uint4 midiChannel;
+      uint7 midiProgram;
       uint7 midiNote;
+
       // period to midiNote on midiChannel (else use midiNote):
       map<uint4, uint7> periodMidiNote;
     };

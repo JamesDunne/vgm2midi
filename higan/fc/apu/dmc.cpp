@@ -92,8 +92,17 @@ auto APU::DMC::power() -> void {
   midi = platform->createMIDITrack();
 }
 
+auto APU::DMC::midiProgram() -> uint7 {
+  auto sm = sampleMidiMap.find(addrLatch);
+  if (!sm) {
+    return 0;
+  }
+
+  return sm().midiProgram;
+}
+
 auto APU::DMC::midiChannel() -> uint4 {
-  auto sm = sampleMidiMap.find(sample);
+  auto sm = sampleMidiMap.find(addrLatch);
   if (!sm) {
     return 9;
   }
@@ -102,13 +111,27 @@ auto APU::DMC::midiChannel() -> uint4 {
 }
 
 auto APU::DMC::midiNote() -> double {
-  auto sm = sampleMidiMap.find(sample);
+  auto sm = sampleMidiMap.find(addrLatch);
   if (!sm) {
-    return 32 + period;
+    // MIDI Channel prefix:
+    vector<uint8_t> mcp;
+    mcp.appendm(midiChannel(), 1);
+    midi->meta(0x20, mcp);
+    // Instrumentation note:
+    auto fmt = string("dmc sample=0x{0} period=0x{1}").format(string_format{hex(addrLatch, 2), hex(period, 2)});
+    midi->meta(0x04, fmt);
+    return period;
   }
 
   auto note = sm().periodMidiNote.find(period);
   if (!note) {
+    // MIDI Channel prefix:
+    vector<uint8_t> mcp;
+    mcp.appendm(midiChannel(), 1);
+    midi->meta(0x20, mcp);
+    // Instrumentation note:
+    auto fmt = string("dmc sample=0x{0} period=0x{1}").format(string_format{hex(addrLatch, 2), hex(period, 2)});
+    midi->meta(0x04, fmt);
     return sm().midiNote;
   }
 

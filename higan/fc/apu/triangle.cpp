@@ -44,7 +44,10 @@ auto APU::Triangle::power() -> void {
   reloadLinear = 0;
 
   midi = platform->createMIDITrack();
-  midi->programChange(midiChannel(), 33);
+}
+
+auto APU::Triangle::midiProgram() -> uint7 {
+  return 33; // Electric Bass (finger)
 }
 
 auto APU::Triangle::midiChannel() -> uint4 {

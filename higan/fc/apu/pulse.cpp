@@ -52,12 +52,18 @@ auto APU::Pulse::power() -> void {
   periodCounter = 1;
 
   midi = platform->createMIDITrack();
-  for (auto c : range(4)) {
-    midi->programChange(4 * n + c, 80 + c);
-  }
 
   lastClock = 0;
   midiTrigger = false;
+}
+
+auto APU::Pulse::midiProgram() -> uint7 {
+  // Synth leads start at 80 with square wave (these are 1-based program numbers)
+  // 81 Lead 1 (square)
+  // 82 Lead 2 (sawtooth)
+  // 83 Lead 3 (calliope)
+  // 84 Lead 4 (chiff)
+  return 80 + duty;
 }
 
 auto APU::Pulse::midiChannel() -> uint4 {

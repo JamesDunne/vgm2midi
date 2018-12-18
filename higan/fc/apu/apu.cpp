@@ -349,7 +349,7 @@ auto APU::loadMidiSupport(Markup::Node document) -> void {
   for (auto nr : document["noise"]) {
     auto period = nr["period"].natural();
     auto midiNote = nr["midiNote"].natural();
-    print("noise map period={0} midiNote={1}\n", string_format{period, midiNote});
+    // print("noise map period={0} midiNote={1}\n", string_format{period, midiNote});
     noise.periodMidiNote.insert(
       period,
       midiNote
@@ -359,6 +359,9 @@ auto APU::loadMidiSupport(Markup::Node document) -> void {
   for (auto nr : document["dmc"]) {
     auto sample = nr["sample"].natural();
     auto midiChannel = nr["midiChannel"].natural() - 1;
+    auto midiProgram = nr["midiProgram"].natural();
+    auto midiNote = nr["midiNote"].natural();
+
     print("dmc map sample={0} midiChannel={1}\n", string_format{sample, midiChannel});
 
     auto tm = dmc.sampleMidiMap.find(sample);
@@ -366,9 +369,10 @@ auto APU::loadMidiSupport(Markup::Node document) -> void {
       dmc.sampleMidiMap.insert(
         sample,
         {
-          midiChannel: nr["midiChannel"].natural() - 1,
+          midiChannel: midiChannel,
+          midiProgram: midiProgram,
           // TODO: initialize midiNote when period is set?
-          midiNote: nr["midiNote"].natural()
+          midiNote: midiNote
         }
       );
 

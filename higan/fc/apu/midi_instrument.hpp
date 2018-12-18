@@ -2,6 +2,8 @@ struct MIDIInstrument {
   virtual auto midiNoteOn() -> void = 0;
   virtual auto midiNoteOff() -> void = 0;
 
+  virtual auto midiProgram() -> uint7 = 0;
+
   virtual auto midiNote() -> double = 0;
   virtual auto midiNoteVelocity() -> uint7 { return 64; };
   virtual auto midiPitchBendEnabled() -> bool { return false; };
@@ -17,14 +19,16 @@ struct MIDIInstrument {
 };
 
 struct MIDIMelodic : MIDIInstrument {
-  virtual auto midiPitchBendEnabled() -> bool override { return true; };
   virtual auto midiNoteOn() -> void override;
   virtual auto midiNoteOff() -> void override;
+
+  virtual auto midiPitchBendEnabled() -> bool override { return true; };
 
   maybe<double> lastMidiNote;
   maybe<uint4> lastMidiChannel;
 };
 
 struct MIDIRhythmic : MIDIMelodic {
+  virtual auto midiProgram() -> uint7 { return 0; };
   virtual auto midiChannel() -> uint4 { return 9; };
 };
