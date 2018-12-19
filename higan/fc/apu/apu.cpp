@@ -262,7 +262,7 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
   case 0x4015: {
     if((data & 0x01) == 0) pulse[0].lengthCounter = 0;
     if((data & 0x02) == 0) pulse[1].lengthCounter = 0;
-    if((data & 0x04) == 0) triangle.lengthCounter = 0;
+    if((data & 0x04) == 0) { triangle.lengthCounter = 0; triangle.midiNoteOff(); }
     if((data & 0x08) == 0)    noise.lengthCounter = 0;
 
     (data & 0x10) ? dmc.start() : dmc.stop();
