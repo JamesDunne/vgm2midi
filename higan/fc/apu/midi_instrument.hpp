@@ -11,8 +11,8 @@ struct MIDIInstrument {
   virtual auto midiChannel() -> uint4 = 0;
   virtual auto midiChannelVolume() -> uint7 { return 64; };
 
-  static auto midiPitchBend(double n) -> uint14 {
-    return (uint14)((n - round(n)) * 0xFFF) + 0x2000;
+  static auto midiPitchBend(double n, double m) -> uint14 {
+    return (uint14)((n - m) * 0xFFF) + 0x2000;
   };
 
   shared_pointer<MIDIDevice> midi;
