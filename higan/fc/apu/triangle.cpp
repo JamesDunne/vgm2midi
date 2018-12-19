@@ -55,7 +55,7 @@ auto APU::Triangle::midiChannel() -> uint4 {
 }
 
 auto APU::Triangle::midiChannelVolume() -> uint7 {
-  return 8 * 8;
+  return 10 * 8;
 }
 
 auto APU::Triangle::midiNote() -> double {

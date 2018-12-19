@@ -78,7 +78,7 @@ auto APU::Noise::midiNote() -> double {
 }
 
 auto APU::Noise::midiNoteVelocity() -> uint7 {
-  return envelope.midiVolume() * 3 / 4;
+  return envelope.midiVolume();
 }
 
 auto APU::Noise::midiNoteOn() -> void {
