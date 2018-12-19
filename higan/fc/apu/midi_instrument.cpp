@@ -11,6 +11,11 @@ auto MIDIMelodic::midiNoteOn() -> void {
   auto n = midiNote();
   auto m = round(n);
 
+  // Rate limit note on of the same note:
+  if (lastMidiNote && ((lastMidiNote() == m) && (midi->tick() - lastMidiNoteTick() < 0x30))) {
+    return;
+  }
+
   if (lastMidiNote) {
     midiNoteOff();
   }
