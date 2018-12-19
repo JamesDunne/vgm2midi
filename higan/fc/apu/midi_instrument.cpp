@@ -8,35 +8,36 @@ auto MIDIMelodic::midiNoteOff() -> void {
 }
 
 auto MIDIMelodic::midiNoteOn() -> void {
-  const int wheel_threshold = 384;
-
   auto n = midiNote();
   auto m = round(n);
   auto newMidiChannel = midiChannel();
   auto newChannelVolume = midiChannelVolume();
 
-  if (!lastMidiNote || m != round(lastMidiNote())) {
+  if (!lastMidiNote || m != lastMidiNote()) {
     midiNoteOff();
 
-    // Update channel volume:
-    midi->controlChange(newMidiChannel, 0x07, newChannelVolume);
+    if (m >= 0) {
+      // Update channel volume:
+      midi->controlChange(newMidiChannel, 0x07, newChannelVolume);
 
-    if (newMidiChannel != 9) {
-      // Reset pitch bend if within a tolerance of a concert pitch:
-      if (abs(n - m) < 0.0625) {
-        // Reset pitch bend to 0:
-        midi->pitchBendChange(newMidiChannel, 0x2000);
+      if (newMidiChannel != 9) {
+        // Reset pitch bend if within a tolerance of a concert pitch:
+        if (abs(n - m) < 0.0625) {
+          // Reset pitch bend to 0:
+          midi->pitchBendChange(newMidiChannel, 0x2000);
+        }
       }
+
+      // Change program:
+      midi->programChange(newMidiChannel, midiProgram());
+
+      // Note ON:
+      midi->noteOn(newMidiChannel, m, midiNoteVelocity());
+
+      lastMidiNoteTick = midi->tick();
+      lastMidiChannel = newMidiChannel;
+      lastMidiNote = m;
     }
-
-    // Change program:
-    midi->programChange(newMidiChannel, midiProgram());
-
-    // Note ON:
-    midi->noteOn(newMidiChannel, m, midiNoteVelocity());
-    lastMidiNoteTick = midi->tick();
-    lastMidiChannel = newMidiChannel;
-    lastMidiNote = m;
   } else if (lastMidiChannel) {
     // Update last channel played on's volume since we don't really support switching
     // duty cycle without restarting the note (i.e. playing it across multiple channels).

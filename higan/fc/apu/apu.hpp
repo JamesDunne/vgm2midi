@@ -137,7 +137,7 @@ struct APU : Thread {
     virtual auto midiNoteVelocity() -> uint7 override;
     virtual auto midiNoteOn() -> void override;
 
-    map<uint5, uint7> periodMidiNote;
+    map<uint5, int> periodMidiNote;
     uint lastEnvelopeVolume;
     uint7 lastMidiNoteVelocity;
   } noise;
@@ -181,10 +181,10 @@ struct APU : Thread {
     struct targetMidi {
       uint4 midiChannel;
       uint7 midiProgram;
-      uint7 midiNote;
+      int midiNote;
 
       // period to midiNote on midiChannel (else use midiNote):
-      map<uint4, uint7> periodMidiNote;
+      map<uint4, int> periodMidiNote;
     };
 
     map<uint8, targetMidi> sampleMidiMap;

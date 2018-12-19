@@ -345,8 +345,13 @@ const uint16 APU::dmcPeriodTablePAL[16] = {
 
 auto APU::loadMidiSupport(Markup::Node document) -> void {
   for (auto nr : document["noise"]) {
-    auto period = nr["period"].natural();
-    auto midiNote = nr["midiNote"].natural();
+    auto period = nr["period"].integer();
+    auto midiNote = nr["midiNote"].integer();
+    auto disable = nr["disable"];
+    if (disable) {
+      midiNote = -1;
+    }
+
     // print("noise map period={0} midiNote={1}\n", string_format{period, midiNote});
     noise.periodMidiNote.insert(
       period,
@@ -358,7 +363,11 @@ auto APU::loadMidiSupport(Markup::Node document) -> void {
     auto sample = nr["sample"].natural();
     auto midiChannel = nr["midiChannel"].natural() - 1;
     auto midiProgram = nr["midiProgram"].natural();
-    auto midiNote = nr["midiNote"].natural();
+    auto midiNote = nr["midiNote"].integer();
+    auto disable = nr["disable"];
+    if (disable) {
+      midiNote = -1;
+    }
 
     // print("dmc map sample={0} midiChannel={1}\n", string_format{sample, midiChannel});
 

@@ -64,13 +64,13 @@ auto APU::Noise::midiNote() -> double {
 
   auto note = periodMidiNote.find(p);
   if (!note) {
-    // MIDI Channel prefix:
-    vector<uint8_t> mcp;
-    mcp.appendm(9, 1);
-    midi->meta(0x20, mcp);
-    // Instrumentation note:
-    auto fmt = string("noise period=0x{0}").format(string_format{hex(p, 2)});
-    midi->meta(0x04, fmt);
+    // // MIDI Channel prefix:
+    // vector<uint8_t> mcp;
+    // mcp.appendm(9, 1);
+    // midi->meta(0x20, mcp);
+    // // Instrumentation note:
+    // auto fmt = string("noise period=0x{0}").format(string_format{hex(p, 2)});
+    // midi->meta(0x04, fmt);
     return p;
   }
 
@@ -78,7 +78,7 @@ auto APU::Noise::midiNote() -> double {
 }
 
 auto APU::Noise::midiNoteVelocity() -> uint7 {
-  return envelope.midiVolume();
+  return envelope.midiVolume() * 3 / 4;
 }
 
 auto APU::Noise::midiNoteOn() -> void {
@@ -88,20 +88,22 @@ auto APU::Noise::midiNoteOn() -> void {
   auto newChannelVolume = midiChannelVolume();
   auto newMidiNoteVelocity = midiNoteVelocity();
 
-  if (!lastMidiNote || m != round(lastMidiNote()) || newMidiNoteVelocity > lastMidiNoteVelocity) {
+  if (!lastMidiNote || m != lastMidiNote() || newMidiNoteVelocity > lastMidiNoteVelocity) {
     midiNoteOff();
 
-    // Update channel volume:
-    midi->controlChange(newMidiChannel, 0x07, newChannelVolume);
+    if (m >= 0) {
+      // Update channel volume:
+      midi->controlChange(newMidiChannel, 0x07, newChannelVolume);
 
-    // Change program:
-    midi->programChange(newMidiChannel, midiProgram());
+      // Change program:
+      midi->programChange(newMidiChannel, midiProgram());
 
-    // Note ON:
-    midi->noteOn(newMidiChannel, m, midiNoteVelocity());
+      // Note ON:
+      midi->noteOn(newMidiChannel, m, midiNoteVelocity());
 
-    lastMidiChannel = newMidiChannel;
-    lastMidiNote = m;
+      lastMidiChannel = newMidiChannel;
+      lastMidiNote = m;
+    }
   } else if (lastMidiChannel) {
     // Update last channel played on's volume since we don't really support switching
     // duty cycle without restarting the note (i.e. playing it across multiple channels).
