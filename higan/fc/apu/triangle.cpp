@@ -13,7 +13,6 @@ auto APU::Triangle::clockLinearLength() -> void {
 
   if(haltLengthCounter == 0) {
     reloadLinear = false;
-    midiNoteOn();
   }
 }
 

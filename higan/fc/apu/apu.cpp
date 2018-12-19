@@ -204,11 +204,10 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     triangle.period = (triangle.period & 0x00ff) | (data << 8);
 
     triangle.reloadLinear = true;
-    // ???
-    // triangle.midiNoteOff();
 
     if(enabledChannels & (1 << 2)) {
       triangle.lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
+      triangle.midiNoteOn();
     }
     return;
   }
