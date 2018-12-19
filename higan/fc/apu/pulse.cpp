@@ -90,3 +90,7 @@ auto APU::Pulse::midiNote() -> double {
   // MIDI 33 = A 2
   return apu.periodMidi[period] + 33;
 }
+
+auto APU::Pulse::midiNoteVelocity() -> uint7 {
+  return 72;
+}

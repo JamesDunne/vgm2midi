@@ -86,6 +86,7 @@ struct APU : Thread {
     virtual auto midiChannel() -> uint4 override;
     virtual auto midiChannelVolume() -> uint7 override;
     virtual auto midiNote() -> double override;
+    virtual auto midiNoteVelocity() -> uint7 override;
   } pulse[2];
 
   struct Triangle : MIDIMelodic {
