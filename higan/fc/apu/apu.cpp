@@ -180,6 +180,7 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     pulse[n].sweep.pulsePeriod = (pulse[n].sweep.pulsePeriod & 0x00ff) | (data << 8);
 
     pulse[n].dutyCounter = 0;
+    pulse[n].midiTrigger = true;
     pulse[n].envelope.reloadDecay = true;
 
     if(enabledChannels & (1 << n)) {
@@ -203,7 +204,8 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     triangle.period = (triangle.period & 0x00ff) | (data << 8);
 
     triangle.reloadLinear = true;
-    triangle.midiNoteOff();
+    // ???
+    // triangle.midiNoteOff();
 
     if(enabledChannels & (1 << 2)) {
       triangle.lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];

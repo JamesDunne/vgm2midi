@@ -78,9 +78,11 @@ struct APU : Thread {
     uint11 period;
     uint periodCounter;
 
-    uint n; // which pulse (0, 1) is this
+    uint  n; // which pulse (0, 1) is this
     uint8 lastClock;
     uint  lastEnvelopeVolume;
+
+    bool  midiTrigger;
 
     virtual auto midiProgram() -> uint7 override;
     virtual auto midiChannel() -> uint4 override;

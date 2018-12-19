@@ -1,5 +1,6 @@
 struct MIDIInstrument {
   virtual auto midiNoteOn() -> void = 0;
+  virtual auto midiNoteContinue() -> void = 0;
   virtual auto midiNoteOff() -> void = 0;
 
   virtual auto midiProgram() -> uint7 = 0;
@@ -19,6 +20,7 @@ struct MIDIInstrument {
 
 struct MIDIMelodic : MIDIInstrument {
   virtual auto midiNoteOn() -> void override;
+  virtual auto midiNoteContinue() -> void override;
   virtual auto midiNoteOff() -> void override;
 
   maybe<double> lastMidiNote;
