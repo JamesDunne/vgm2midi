@@ -36,8 +36,6 @@ struct APU : Thread {
     uint8 decayCounter;
     uint4 decayVolume;
 
-    auto midiVolume() -> uint7;
-
     bool midiTrigger;
   };
 
