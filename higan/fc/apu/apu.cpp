@@ -20,7 +20,7 @@ APU::APU() {
       pulseDAC[amp] = 95.88 / ((8128.0 / amp) + 100.0);
     }
 
-    pulseMIDI[amp] = (uint7)(127 * log2(1 + pow(4.0 * pulseDAC[amp], 0.75)));
+    pulseMIDI[amp] = (uint7)(127 * log2(1 + pow(4.2 * pulseDAC[amp], 0.75)));
   }
 
   for(uint dmc_amp : range(128)) {
