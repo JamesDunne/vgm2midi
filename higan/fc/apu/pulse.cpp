@@ -74,7 +74,7 @@ auto APU::Pulse::power() -> void {
 auto APU::Pulse::midiProgram() -> uint7 {
   switch (duty) {
     case 0: return 80; // 81 Lead 1 (square)
-    case 1: return 81; // 82 Lead 2 (sawtooth)
+    case 1: return 29; // 30 Overdriven Guitar
     case 2: return 82; // 83 Lead 3 (calliope)
     case 3: return 29; // 30 Overdriven Guitar
     default: return 80;
@@ -95,5 +95,5 @@ auto APU::Pulse::midiNote() -> double {
 }
 
 auto APU::Pulse::midiNoteVelocity() -> uint7 {
-  return 88;
+  return 96;
 }
