@@ -8,7 +8,7 @@ auto APU::Noise::clock() -> uint8 {
   if(written) written--;
 
   if(lengthCounter == 0) {
-    if (written == 0) midiNoteOff();
+    midiNoteOff();
     return 0;
   }
 
