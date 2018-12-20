@@ -19,6 +19,8 @@ APU::APU() {
     } else {
       pulseDAC[amp] = 95.88 / ((8128.0 / amp) + 100.0);
     }
+
+    pulseMIDI[amp] = (uint7)(127 * log2(1 + pow(4.0 * pulseDAC[amp], 0.75)));
   }
 
   for(uint dmc_amp : range(128)) {
@@ -33,6 +35,13 @@ APU::APU() {
       }
     }
   }
+
+  for (uint noise_amp : range(16)) {
+    noiseMIDI[noise_amp] = (uint7)(127 * log2(1 + pow(4.0 * dmcTriangleNoiseDAC[0][0][noise_amp], 0.75)));
+  }
+
+  triangleMIDI = (uint7)(127 * log2(1 + pow(4.0 * dmcTriangleNoiseDAC[0][3][0], 0.75)));
+  dmcMIDI = (uint7)(127 * log2(1 + pow(4.0 * dmcTriangleNoiseDAC[12][0][0], 0.75)));
 }
 
 auto APU::Enter() -> void {

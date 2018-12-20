@@ -143,7 +143,5 @@ auto APU::DMC::midiNote() -> double {
 }
 
 auto APU::DMC::midiNoteVelocity() -> uint7 {
-  // NOTE: picking 32 as 1/4 of 128 (max sample)
-  //  0.19789767009 = 159.79 / (100.0 + 1.0 / (32 / 22638))
-  return (uint)(127 * log2(1 + pow(4.0 * 159.79 / (100.0 + 1.0 / (12 / 22638.0)), 0.75)));
+  return apu.dmcMIDI;
 }

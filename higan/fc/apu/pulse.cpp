@@ -95,11 +95,7 @@ auto APU::Pulse::midiChannel() -> uint4 {
 
 auto APU::Pulse::midiChannelVolume() -> uint7 {
   auto x = envelope.volume();
-
-  if (x == 0) return 0;
-  //  0.14937681761 = 95.88/((8128.0/15)+100.0)
-  // 27.8180237304  = 255 * ((2^0.14937681761)-1)
-  return (uint)(127 * log2(1 + pow(4.0 * 95.88 / ((8128.0 / x) + 100.0), 0.75)));
+  return apu.pulseMIDI[x];
 }
 
 auto APU::Pulse::midiNote() -> double {

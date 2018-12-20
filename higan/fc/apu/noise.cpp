@@ -106,8 +106,5 @@ auto APU::Noise::midiNote() -> double {
 
 auto APU::Noise::midiNoteVelocity() -> uint7 {
   auto x = envelope.volume();
-
-  //  0.17443053635 = 159.79 / (100.0 + 1.0 / (15 / 12241.0))
-  // 32.7726026591  = 255 * ((2^0.17443053635)-1)
-  return (uint)(127 * log2(1 + pow(4.0 * 159.79 / (100.0 + 1.0 / (x / 12241.0)), 0.75)));
+  return apu.noiseMIDI[x];
 }

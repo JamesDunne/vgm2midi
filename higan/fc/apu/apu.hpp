@@ -222,6 +222,11 @@ struct APU : Thread {
   double pulseDAC[32];
   double dmcTriangleNoiseDAC[128][16][16];
 
+  uint7 pulseMIDI[32];
+  uint7 triangleMIDI;
+  uint7 noiseMIDI[16];
+  uint7 dmcMIDI;
+
   uint cyclesPerMidiTick;
   uint midiTickCycle;
 
