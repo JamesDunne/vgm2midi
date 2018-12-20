@@ -66,7 +66,7 @@ auto APU::Triangle::power() -> void {
 }
 
 auto APU::Triangle::midiProgram() -> uint7 {
-  return 33; // Electric Bass (finger)
+  return 33; // 34 Electric Bass (finger)
 }
 
 auto APU::Triangle::midiChannel() -> uint4 {
@@ -74,7 +74,7 @@ auto APU::Triangle::midiChannel() -> uint4 {
 }
 
 auto APU::Triangle::midiChannelVolume() -> uint7 {
-  return 9 * 8;
+  return 64;
 }
 
 auto APU::Triangle::midiNote() -> double {
