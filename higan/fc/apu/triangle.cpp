@@ -1,9 +1,10 @@
 auto APU::Triangle::clockLength() -> void {
+  if(midiTrigger && written == 0) {
+    midiNoteOn();
+    midiTrigger = false;
+  }
+
   if(haltLengthCounter == 0) {
-    if(midiTrigger && lengthCounter > 0) {
-      midiNoteOn();
-      midiTrigger = false;
-    }
     if(lengthCounter > 0) lengthCounter--;
   }
 }
