@@ -34,6 +34,9 @@ auto APU::Pulse::clock() -> uint8 {
       if (!trigger && midiTriggerMaybe && !lastMidiNote) {
         trigger = true;
       }
+      if (!trigger && duty != lastDuty) {
+        trigger = true;
+      }
 
       if (trigger) {
         if (envelope.midiTrigger) envelope.midiTrigger = false;
@@ -43,12 +46,11 @@ auto APU::Pulse::clock() -> uint8 {
       }
 
       midiNoteContinue();
+      lastDuty = duty;
     } else if (volume == 0) {
       midiNoteOff();
     }
   }
-
-  lastEnvelopeVolume = volume;
 
   if(--periodCounter == 0) {
     periodCounter = (sweep.pulsePeriod + 1) * 2;
@@ -74,6 +76,7 @@ auto APU::Pulse::power() -> void {
   midiTrigger = 0;
   midiTriggerMaybe = 0;
   written = 0;
+  lastDuty = 0;
 }
 
 auto APU::Pulse::midiProgram() -> uint7 {

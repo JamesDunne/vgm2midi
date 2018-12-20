@@ -79,7 +79,7 @@ struct APU : Thread {
     uint periodCounter;
 
     uint  n; // which pulse (0, 1) is this
-    uint  lastEnvelopeVolume;
+    uint  lastDuty;
 
     bool  midiTrigger;
     bool  midiTriggerMaybe;
@@ -146,7 +146,6 @@ struct APU : Thread {
     virtual auto midiNoteOn() -> void override;
 
     map<uint5, int> periodMidiNote;
-    uint lastEnvelopeVolume;
     uint7 lastMidiNoteVelocity;
   } noise;
 

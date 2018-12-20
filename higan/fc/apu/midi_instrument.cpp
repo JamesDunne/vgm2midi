@@ -10,9 +10,13 @@ auto MIDIMelodic::midiNoteOff() -> void {
 auto MIDIMelodic::midiNoteOn() -> void {
   auto n = midiNote();
   auto m = round(n);
+  auto newMidiChannel = midiChannel();
 
   // Rate limit note on of the same note:
-  if (lastMidiNote && ((lastMidiNote() == m) && (midi->tick() - lastMidiNoteTick() < 0x30))) {
+  if (lastMidiNote && lastMidiChannel
+    && (lastMidiChannel() == newMidiChannel)
+    && ((lastMidiNote() == m) && (midi->tick() - lastMidiNoteTick() < 0x30))
+  ) {
     return;
   }
 
@@ -22,7 +26,6 @@ auto MIDIMelodic::midiNoteOn() -> void {
 
   if (m < 0) return;
 
-  auto newMidiChannel = midiChannel();
   auto newChannelVolume = midiChannelVolume();
 
   // Update channel volume:

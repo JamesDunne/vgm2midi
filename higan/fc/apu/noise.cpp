@@ -17,8 +17,6 @@ auto APU::Noise::clock() -> uint8 {
     midiNoteOn();
   }
 
-  lastEnvelopeVolume = volume;
-
   if(--periodCounter == 0) {
     uint feedback;
 
@@ -52,7 +50,6 @@ auto APU::Noise::power() -> void {
 
   midi = platform->createMIDITrack();
 
-  lastEnvelopeVolume = 0;
   lastMidiNoteVelocity = 0;
 }
 
