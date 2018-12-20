@@ -172,6 +172,7 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
   case 0x4002: case 0x4006: {
     pulse[n].period = (pulse[n].period & 0x0700) | (data << 0);
     pulse[n].sweep.pulsePeriod = (pulse[n].sweep.pulsePeriod & 0x0700) | (data << 0);
+    pulse[n].midiTriggerMaybe = true;
     return;
   }
 

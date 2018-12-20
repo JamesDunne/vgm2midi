@@ -6,13 +6,11 @@ auto APU::Pulse::clockLength() -> void {
 
 auto APU::Pulse::clock() -> uint8 {
   if(!sweep.checkPeriod()) {
-    if (lastClock != 0) midiNoteOff();
-    lastClock = 0;
+    midiNoteOff();
     return 0;
   }
   if(lengthCounter == 0) {
-    if (lastClock != 0) midiNoteOff();
-    lastClock = 0;
+    midiNoteOff();
     return 0;
   }
 
@@ -29,7 +27,10 @@ auto APU::Pulse::clock() -> uint8 {
     midiNoteOff();
     result = 0;
   } else if (volume > 0) {
-    bool trigger = midiTrigger || envelope.midiTrigger || volume > lastEnvelopeVolume;
+    bool trigger = midiTrigger || envelope.midiTrigger;
+    if (!trigger && midiTriggerMaybe && !lastMidiNote) {
+      trigger = true;
+    }
 
     if (trigger) {
       if (envelope.midiTrigger) envelope.midiTrigger = false;
@@ -50,7 +51,6 @@ auto APU::Pulse::clock() -> uint8 {
     dutyCounter--;
   }
 
-  lastClock = result;
   return result;
 }
 
@@ -67,8 +67,8 @@ auto APU::Pulse::power() -> void {
 
   midi = platform->createMIDITrack();
 
-  lastClock = 0;
   midiTrigger = 0;
+  midiTriggerMaybe = 0;
 }
 
 auto APU::Pulse::midiProgram() -> uint7 {
