@@ -95,5 +95,5 @@ auto APU::Pulse::midiNote() -> double {
 }
 
 auto APU::Pulse::midiNoteVelocity() -> uint7 {
-  return 72;
+  return 88;
 }

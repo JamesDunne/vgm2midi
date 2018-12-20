@@ -63,3 +63,7 @@ auto APU::Triangle::midiNote() -> double {
   // MIDI 21 = A 1
   return apu.periodMidi[period] + 21;
 }
+
+auto APU::Triangle::midiNoteVelocity() -> uint7 {
+  return 72;
+}

@@ -116,6 +116,7 @@ struct APU : Thread {
     virtual auto midiChannel() -> uint4 override;
     virtual auto midiChannelVolume() -> uint7 override;
     virtual auto midiNote() -> double override;
+    virtual auto midiNoteVelocity() -> uint7 override;
   } triangle;
 
   struct Noise : MIDIRhythmic {
@@ -180,6 +181,7 @@ struct APU : Thread {
     virtual auto midiProgram() -> uint7 override;
     virtual auto midiChannel() -> uint4 override;
     virtual auto midiNote() -> double override;
+    virtual auto midiNoteVelocity() -> uint7 override;
 
     struct targetMidi {
       uint4 midiChannel;

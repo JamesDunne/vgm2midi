@@ -141,3 +141,7 @@ auto APU::DMC::midiNote() -> double {
 
   return note();
 }
+
+auto APU::DMC::midiNoteVelocity() -> uint7 {
+  return 96;
+}
