@@ -17,21 +17,31 @@ auto APU::Noise::clock() -> uint8 {
 
   if (written == 0) {
     if (volume > 0) {
-      bool trigger = midiTrigger || envelope.midiTrigger;
-      if (!trigger && !lastMidiNote) {
-        trigger = true;
+      if (envelope.midiTrigger) {
+        envelope.midiTrigger = false;
+        bool trigger = false;
+        if (lastMidiNote && midiNote() != lastMidiNote()) {
+          lastEnvelopeVolume = 16;
+          lastEnvelopeDirection = 1;
+        }
+
+        int envelopeDirection = volume - lastEnvelopeVolume;
+        if (lastEnvelopeDirection > 0 && envelopeDirection < 0) {
+          trigger = true;
+        }
+
+        if (trigger) {
+          midiNoteOn();
+        }
+
+        midiNoteContinue();
+        lastEnvelopeDirection = volume - lastEnvelopeVolume;
+        lastEnvelopeVolume = volume;
       }
-
-      if (trigger) {
-        if (envelope.midiTrigger) envelope.midiTrigger = false;
-        if (midiTrigger) midiTrigger = false;
-
-        midiNoteOn();
-      }
-
-      midiNoteContinue();
     } else {
       midiNoteOff();
+      lastEnvelopeVolume = 16;
+      lastEnvelopeDirection = 1;
     }
   }
 
@@ -68,9 +78,9 @@ auto APU::Noise::power() -> void {
 
   midi = platform->createMIDITrack();
 
-  lastMidiNoteVelocity = 0;
   written = 0;
-  midiTrigger = false;
+  lastEnvelopeDirection = 0;
+  lastEnvelopeVolume = 0;
 }
 
 auto APU::Noise::midiNote() -> double {

@@ -240,7 +240,6 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
   case 0x400f: {
     noise.envelope.reloadDecay = true;
     noise.written = cyclesPerMidiTick;
-    noise.midiTrigger = true;
 
     if(enabledChannels & (1 << 3)) {
       noise.lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];

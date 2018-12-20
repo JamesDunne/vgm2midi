@@ -147,9 +147,9 @@ struct APU : Thread {
 
     map<uint, int> periodMidiNote;
 
-    uint7 lastMidiNoteVelocity;
     int written;
-    bool midiTrigger;
+    int lastEnvelopeDirection;
+    int lastEnvelopeVolume;
   } noise;
 
   struct DMC : MIDIRhythmic {

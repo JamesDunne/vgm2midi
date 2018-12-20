@@ -69,11 +69,11 @@ auto MIDIMelodic::midiNoteContinue() -> void {
 
     // Period is changing too finely for MIDI note to change:
     auto pitchDiff = abs(n - m);
-    if (pitchDiff >= 0.0625 && pitchDiff < 0.925) {
+    if (pitchDiff >= 0.0625 && pitchDiff < 0.8) {
       // Emit pitch wheel change:
       auto newPitchBend = midiPitchBend(n, m);
       midi->pitchBendChange(lastMidiChannel(), newPitchBend);
-    } else if (pitchDiff >= 0.925) {
+    } else if (pitchDiff >= 0.8) {
       // Too far outside bend range so start a new note:
       midiNoteOn();
     }
