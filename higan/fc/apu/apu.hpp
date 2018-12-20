@@ -83,6 +83,7 @@ struct APU : Thread {
 
     bool  midiTrigger;
     bool  midiTriggerMaybe;
+    int   written;
 
     virtual auto midiProgram() -> uint7 override;
     virtual auto midiChannel() -> uint4 override;
@@ -111,6 +112,9 @@ struct APU : Thread {
     uint5 stepCounter;
     uint8 linearLengthCounter;
     bool reloadLinear;
+
+    bool midiTrigger;
+    int written;
 
     virtual auto midiProgram() -> uint7 override;
     virtual auto midiChannel() -> uint4 override;

@@ -5,6 +5,8 @@ auto APU::Pulse::clockLength() -> void {
 }
 
 auto APU::Pulse::clock() -> uint8 {
+  if(written) written--;
+
   if(!sweep.checkPeriod()) {
     midiNoteOff();
     return 0;
@@ -26,22 +28,24 @@ auto APU::Pulse::clock() -> uint8 {
   if(sweep.pulsePeriod < 0x008) {
     midiNoteOff();
     result = 0;
-  } else if (volume > 0) {
-    bool trigger = midiTrigger || envelope.midiTrigger;
-    if (!trigger && midiTriggerMaybe && !lastMidiNote) {
-      trigger = true;
+  } else if (written == 0) {
+    if (volume > 0) {
+      bool trigger = midiTrigger || envelope.midiTrigger;
+      if (!trigger && midiTriggerMaybe && !lastMidiNote) {
+        trigger = true;
+      }
+
+      if (trigger) {
+        if (envelope.midiTrigger) envelope.midiTrigger = false;
+        if (midiTrigger) midiTrigger = false;
+
+        midiNoteOn();
+      }
+
+      midiNoteContinue();
+    } else if (volume == 0) {
+      midiNoteOff();
     }
-
-    if (trigger) {
-      if (envelope.midiTrigger) envelope.midiTrigger = false;
-      if (midiTrigger) midiTrigger = false;
-
-      midiNoteOn();
-    }
-
-    midiNoteContinue();
-  } else if (volume == 0) {
-    midiNoteOff();
   }
 
   lastEnvelopeVolume = volume;
@@ -69,6 +73,7 @@ auto APU::Pulse::power() -> void {
 
   midiTrigger = 0;
   midiTriggerMaybe = 0;
+  written = 0;
 }
 
 auto APU::Pulse::midiProgram() -> uint7 {

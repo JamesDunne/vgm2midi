@@ -101,6 +101,8 @@ auto APU::power(bool reset) -> void {
   // -------+-------------+-------------+----------
   // second |   1 minutes | 120 beats   | 480 ticks  
   cyclesPerMidiTick = sampleRate * 60.0 / (midiTempo * midiTicksPerBeat);
+  // print(cyclesPerMidiTick, "\n");
+  // cyclesPerMidiTick = 1864 (NTSC)
 
   midiTickCycle = 0;
 
@@ -157,6 +159,7 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     pulse[n].envelope.loopMode = data & 0x20;
     pulse[n].envelope.useSpeedAsVolume = data & 0x10;
     pulse[n].envelope.speed = data & 0x0f;
+    pulse[n].written = cyclesPerMidiTick;
     return;
   }
 
@@ -166,6 +169,7 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     pulse[n].sweep.decrement = data & 0x08;
     pulse[n].sweep.shift = data & 0x07;
     pulse[n].sweep.reload = true;
+    pulse[n].written = cyclesPerMidiTick;
     return;
   }
 
@@ -173,6 +177,7 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     pulse[n].period = (pulse[n].period & 0x0700) | (data << 0);
     pulse[n].sweep.pulsePeriod = (pulse[n].sweep.pulsePeriod & 0x0700) | (data << 0);
     pulse[n].midiTriggerMaybe = true;
+    pulse[n].written = cyclesPerMidiTick;
     return;
   }
 
@@ -183,6 +188,7 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     pulse[n].dutyCounter = 0;
     pulse[n].midiTrigger = true;
     pulse[n].envelope.reloadDecay = true;
+    pulse[n].written = cyclesPerMidiTick;
 
     if(enabledChannels & (1 << n)) {
       pulse[n].lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
@@ -193,11 +199,13 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
   case 0x4008: {
     triangle.haltLengthCounter = data & 0x80;
     triangle.linearLength = data & 0x7f;
+    triangle.written = cyclesPerMidiTick;
     return;
   }
 
   case 0x400a: {
     triangle.period = (triangle.period & 0x0700) | (data << 0);
+    triangle.written = cyclesPerMidiTick;
     return;
   }
 
@@ -205,10 +213,11 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     triangle.period = (triangle.period & 0x00ff) | (data << 8);
 
     triangle.reloadLinear = true;
+    triangle.written = cyclesPerMidiTick;
 
     if(enabledChannels & (1 << 2)) {
       triangle.lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
-      triangle.midiNoteOn();
+      triangle.midiTrigger = true;
     }
     return;
   }
@@ -261,10 +270,10 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
   }
 
   case 0x4015: {
-    if((data & 0x01) == 0) pulse[0].lengthCounter = 0;
-    if((data & 0x02) == 0) pulse[1].lengthCounter = 0;
-    if((data & 0x04) == 0) { triangle.lengthCounter = 0; triangle.midiNoteOff(); }
-    if((data & 0x08) == 0)    noise.lengthCounter = 0;
+    if((data & 0x01) == 0) { pulse[0].lengthCounter = 0; pulse[0].written = cyclesPerMidiTick; }
+    if((data & 0x02) == 0) { pulse[1].lengthCounter = 0; pulse[1].written = cyclesPerMidiTick; }
+    if((data & 0x04) == 0) { triangle.lengthCounter = 0; triangle.written = cyclesPerMidiTick; triangle.midiNoteOff(); }
+    if((data & 0x08) == 0)      noise.lengthCounter = 0;
 
     (data & 0x10) ? dmc.start() : dmc.stop();
     dmc.irqPending = false;

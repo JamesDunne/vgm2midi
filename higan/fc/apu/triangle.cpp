@@ -1,5 +1,9 @@
 auto APU::Triangle::clockLength() -> void {
   if(haltLengthCounter == 0) {
+    if(midiTrigger && lengthCounter > 0) {
+      midiNoteOn();
+      midiTrigger = false;
+    }
     if(lengthCounter > 0) lengthCounter--;
   }
 }
@@ -17,21 +21,23 @@ auto APU::Triangle::clockLinearLength() -> void {
 }
 
 auto APU::Triangle::clock() -> uint8 {
+  if(written) written--;
+
   uint8 result = stepCounter & 0x0f;
   if((stepCounter & 0x10) == 0) result ^= 0x0f;
   if(!reloadLinear && linearLengthCounter == 0) {
-    midiNoteOff();
+    if (written == 0) midiNoteOff();
   }
 
   if(lengthCounter == 0 || linearLengthCounter == 0) {
     return result;
   }
   if(period+1 < 3) {
-    midiNoteOff();
+    if (written == 0) midiNoteOff();
     return result;
   }
 
-  midiNoteContinue();
+  if (written == 0) midiNoteContinue();
 
   if(--periodCounter == 0) {
     stepCounter++;
@@ -53,6 +59,9 @@ auto APU::Triangle::power() -> void {
   reloadLinear = 0;
 
   midi = platform->createMIDITrack();
+
+  midiTrigger = false;
+  written = 0;
 }
 
 auto APU::Triangle::midiProgram() -> uint7 {
