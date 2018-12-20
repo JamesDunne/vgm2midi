@@ -1,0 +1,8 @@
+noise
+
+dmc
+  map sample=0x94 period=0x0a midiChannel=11 midiProgram=37 midiNote=31
+  map sample=0xd4 period=0x0c midiChannel=11 midiProgram=37 midiNote=34
+  map sample=0x94 period=0x0c midiChannel=11 midiProgram=37 midiNote=36
+  // not sure about this note:
+  map sample=0xb4 period=0x0c midiChannel=11 midiProgram=37 midiNote=35

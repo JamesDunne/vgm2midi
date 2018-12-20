@@ -1,0 +1,4 @@
+noise
+  map period=15 midiNote=36
+  map period=14 midiNote=38
+  map period=1 midiNote=42

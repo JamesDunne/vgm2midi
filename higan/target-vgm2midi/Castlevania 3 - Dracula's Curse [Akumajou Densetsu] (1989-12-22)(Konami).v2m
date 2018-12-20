@@ -1,0 +1,15 @@
+dmc
+  map sample=0x00 midiChannel=10 midiNote=36
+  map sample=0x01 midiChannel=10 midiNote=38
+  map sample=0x05 period=0x0e midiChannel=10 midiNote=47
+  map sample=0x05 period=0x0d midiChannel=10 midiNote=45
+  map sample=0x05 period=0x0c midiChannel=10 midiNote=43
+
+noise
+  map period=0x05 midiNote=42
+  map period=0x04 disable
+  map period=0x02 disable
+  map period=0x01 disable
+  map period=0x00 disable
+  map period=0x09 disable
+  map period=0x0d disable

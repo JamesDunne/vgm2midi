@@ -1,0 +1,51 @@
+noise
+  map period=0x00 midiNote=42
+  map period=0x01 midiNote=42
+  map period=0x02 midiNote=42
+  map period=0x03 midiNote=42
+  map period=0x04 midiNote=42
+  map period=0x05 midiNote=42
+  map period=0x06 midiNote=42
+  map period=0x07 midiNote=42
+  map period=0x08 midiNote=44
+  map period=0x09 midiNote=42
+  map period=0x0A midiNote=46
+  map period=0x0B midiNote=42
+  map period=0x0C midiNote=42
+  map period=0x0D midiNote=42
+  map period=0x0E midiNote=42
+  map period=0x0F midiNote=51
+  map period=0x10 midiNote=81
+  map period=0x11 midiNote=80
+  map period=0x12 midiNote=79
+  map period=0x13 midiNote=78
+  map period=0x14 midiNote=77
+  map period=0x15 midiNote=76
+  map period=0x16 midiNote=75
+  map period=0x17 midiNote=74
+  map period=0x18 midiNote=73
+  map period=0x19 midiNote=72
+  map period=0x1A midiNote=71
+  map period=0x1B midiNote=70
+  map period=0x1C midiNote=69
+  map period=0x1D midiNote=68
+  map period=0x1E midiNote=67
+  map period=0x1F midiNote=66
+
+dmc
+  map sample=0x05 midiChannel=10 midiNote=38
+  map sample=0x00 period=0x0F midiChannel=10 midiNote=45
+  map sample=0x00 period=0x0E midiChannel=10 midiNote=43
+  map sample=0x00 period=0x0D midiChannel=10 midiNote=41
+  map sample=0x0D midiChannel=10 midiNote=36
+
+  map sample=0x0E midiChannel=11 midiProgram=55 midiNote=62
+  map sample=0x19 midiChannel=11 midiProgram=55 midiNote=63
+  map sample=0x24 midiChannel=11 midiProgram=55 midiNote=64
+  map sample=0x2F midiChannel=11 midiProgram=55 midiNote=65
+  map sample=0x3A midiChannel=11 midiProgram=55 midiNote=67
+  map sample=0x45 midiChannel=11 midiProgram=55 midiNote=68
+  map sample=0x50 midiChannel=11 midiProgram=55 midiNote=69
+  map sample=0x5B midiChannel=11 midiProgram=55 midiNote=70
+  map sample=0x66 midiChannel=11 midiProgram=55 midiNote=71
+  map sample=0x71 midiChannel=11 midiProgram=55 midiNote=72
