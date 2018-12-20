@@ -5,16 +5,34 @@ auto APU::Noise::clockLength() -> void {
 }
 
 auto APU::Noise::clock() -> uint8 {
+  if(written) written--;
+
   if(lengthCounter == 0) {
-    midiNoteOff();
+    if (written == 0) midiNoteOff();
     return 0;
   }
 
   auto volume = envelope.volume();
   uint8 result = (lfsr & 1) ? volume : 0;
 
-  if (volume > 0) {
-    midiNoteOn();
+  if (written == 0) {
+    if (volume > 0) {
+      bool trigger = midiTrigger || envelope.midiTrigger;
+      if (!trigger && !lastMidiNote) {
+        trigger = true;
+      }
+
+      if (trigger) {
+        if (envelope.midiTrigger) envelope.midiTrigger = false;
+        if (midiTrigger) midiTrigger = false;
+
+        midiNoteOn();
+      }
+
+      midiNoteContinue();
+    } else {
+      midiNoteOff();
+    }
   }
 
   if(--periodCounter == 0) {
@@ -51,10 +69,12 @@ auto APU::Noise::power() -> void {
   midi = platform->createMIDITrack();
 
   lastMidiNoteVelocity = 0;
+  written = 0;
+  midiTrigger = false;
 }
 
 auto APU::Noise::midiNote() -> double {
-  uint5 p = period;
+  uint p = period;
   if (shortMode) {
     p |= 0x10;
   }
@@ -76,36 +96,4 @@ auto APU::Noise::midiNote() -> double {
 
 auto APU::Noise::midiNoteVelocity() -> uint7 {
   return envelope.midiVolume() * 3 / 4;
-}
-
-auto APU::Noise::midiNoteOn() -> void {
-  auto n = midiNote();
-  auto m = round(n);
-  auto newMidiChannel = midiChannel();
-  auto newChannelVolume = midiChannelVolume();
-  auto newMidiNoteVelocity = midiNoteVelocity();
-
-  if (!lastMidiNote || m != lastMidiNote() || newMidiNoteVelocity > lastMidiNoteVelocity) {
-    midiNoteOff();
-
-    if (m >= 0) {
-      // Update channel volume:
-      midi->controlChange(newMidiChannel, 0x07, newChannelVolume);
-
-      // Change program:
-      midi->programChange(newMidiChannel, midiProgram());
-
-      // Note ON:
-      midi->noteOn(newMidiChannel, m, midiNoteVelocity());
-
-      lastMidiChannel = newMidiChannel;
-      lastMidiNote = m;
-    }
-  } else if (lastMidiChannel) {
-    // Update last channel played on's volume since we don't really support switching
-    // duty cycle without restarting the note (i.e. playing it across multiple channels).
-    midi->controlChange(lastMidiChannel(), 0x07, newChannelVolume);
-  }
-
-  lastMidiNoteVelocity = newMidiNoteVelocity;
 }

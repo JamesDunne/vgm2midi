@@ -47,7 +47,7 @@ auto APU::Pulse::clock() -> uint8 {
 
       midiNoteContinue();
       lastDuty = duty;
-    } else if (volume == 0) {
+    } else {
       midiNoteOff();
     }
   }

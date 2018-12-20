@@ -226,17 +226,21 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     noise.envelope.loopMode = data & 0x20;
     noise.envelope.useSpeedAsVolume = data & 0x10;
     noise.envelope.speed = data & 0x0f;
+    noise.written = cyclesPerMidiTick;
     return;
   }
 
   case 0x400e: {
     noise.shortMode = data & 0x80;
     noise.period = data & 0x0f;
+    noise.written = cyclesPerMidiTick;
     return;
   }
 
   case 0x400f: {
     noise.envelope.reloadDecay = true;
+    noise.written = cyclesPerMidiTick;
+    noise.midiTrigger = true;
 
     if(enabledChannels & (1 << 3)) {
       noise.lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
@@ -273,7 +277,7 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     if((data & 0x01) == 0) { pulse[0].lengthCounter = 0; pulse[0].written = cyclesPerMidiTick; }
     if((data & 0x02) == 0) { pulse[1].lengthCounter = 0; pulse[1].written = cyclesPerMidiTick; }
     if((data & 0x04) == 0) { triangle.lengthCounter = 0; triangle.written = cyclesPerMidiTick; triangle.midiNoteOff(); }
-    if((data & 0x08) == 0)      noise.lengthCounter = 0;
+    if((data & 0x08) == 0) {    noise.lengthCounter = 0; noise.written = cyclesPerMidiTick; }
 
     (data & 0x10) ? dmc.start() : dmc.stop();
     dmc.irqPending = false;

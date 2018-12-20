@@ -143,10 +143,13 @@ struct APU : Thread {
 
     virtual auto midiNote() -> double override;
     virtual auto midiNoteVelocity() -> uint7 override;
-    virtual auto midiNoteOn() -> void override;
+    // virtual auto midiNoteOn() -> void override;
 
-    map<uint5, int> periodMidiNote;
+    map<uint, int> periodMidiNote;
+
     uint7 lastMidiNoteVelocity;
+    int written;
+    bool midiTrigger;
   } noise;
 
   struct DMC : MIDIRhythmic {
