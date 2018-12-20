@@ -75,7 +75,7 @@ auto APU::Triangle::midiChannel() -> uint4 {
 
 auto APU::Triangle::midiChannelVolume() -> uint7 {
   //  0.14161072338 = 159.79 / (100.0 + 1.0 / (8 / 8227.0))
-  return (uint)(127 * log2(1 + pow(4.0 * 159.79 / (100.0 + 1.0 / (6 / 8227.0)), 0.75)));
+  return (uint)(127 * log2(1 + pow(4.0 * 159.79 / (100.0 + 1.0 / (4 / 8227.0)), 0.75)));
 }
 
 auto APU::Triangle::midiNote() -> double {
