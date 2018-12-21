@@ -39,7 +39,7 @@ auto APU::Noise::clock() -> uint8 {
         lastEnvelopeVolume = volume;
       }
     } else {
-      if (written == 0 && lastMidiNote) midiNoteOff();
+      if (lastMidiNote) midiNoteOff();
       lastEnvelopeVolume = 16;
       lastEnvelopeDirection = 1;
     }

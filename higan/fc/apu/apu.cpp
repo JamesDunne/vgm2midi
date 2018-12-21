@@ -321,6 +321,8 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
 
   case 0x400f: {
     noise.envelope.reloadDecay = true;
+    // We force it here because useSpeedAsVolume might be false:
+    noise.envelope.midiTrigger = true;
     noise.written = cyclesPerMidiTick;
 
     if(enabledChannels & (1 << 3)) {
