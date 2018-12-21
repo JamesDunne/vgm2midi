@@ -306,7 +306,7 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	const int header_size = 0x2C;
 
 	auto wave = file::open(wavFilename, file::mode::write);
-	waveFile = new WaveFile(wave, 1, 48000);
+	waveFile = new WaveFile(wave, 48000, 1, 16);
 	waveFile->writeHeader();
 
 	int plays = 0;

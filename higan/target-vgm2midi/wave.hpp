@@ -1,6 +1,6 @@
 struct WaveFile {
-	WaveFile(file_buffer& file_, long chanCount_, long rate_)
-	  : file(file_), chanCount(chanCount_), rate(rate_)
+	WaveFile(file_buffer& file_, long rate_, long chanCount_, long bitsPerSample_ = 32)
+	  : file(file_), chanCount(chanCount_), rate(rate_), bitsPerSample(bitsPerSample_)
 	{
 		samples = 0;
 	}
@@ -8,6 +8,7 @@ struct WaveFile {
 	file_buffer& file;
 	const long chanCount;
 	const long rate;
+	const long bitsPerSample;
 	long samples;
 
 	auto writeHeader() -> void;
