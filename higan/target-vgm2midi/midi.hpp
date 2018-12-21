@@ -5,6 +5,7 @@ struct MTrk : MIDIDevice {
   MTrk(MIDIFile& file_) : file(file_) {
     tick_ = 0;
     tick_abs = 0;
+    flushCount = 0;
   }
 
   virtual auto noteOff(uint4 channel, uint7 note, uint7 velocity) -> void override;
@@ -28,6 +29,7 @@ private:
   vector<uint8_t> bytes;
   midi_tick_t tick_;
   midi_tick_t tick_abs;
+  int flushCount;
 
   auto writeVarint(uint value) -> void;
   auto writeTickDelta() -> void;
@@ -36,6 +38,8 @@ private:
 
   auto write(uint8_t data) -> void;
   auto write(array_view<uint8_t> memory) -> void;
+
+  auto flush() -> void;
 
   friend struct MIDIFile;
 };

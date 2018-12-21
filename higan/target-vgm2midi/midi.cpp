@@ -87,6 +87,15 @@ auto MTrk::write(array_view<uint8_t> memory) -> void {
   }
 }
 
+auto MTrk::flush() -> void {
+  if (file.midiFormat == 0) {
+    if (++flushCount == 100) {
+      file.updateHeader();
+      flushCount = 0;
+    }
+  }
+}
+
 
 auto MTrk::advanceTicks(midi_tick_t ticks) -> void {
   tick_ += ticks;
@@ -151,6 +160,8 @@ auto MTrk::meta(uint7 event, const array_view<uint8_t> data) -> void {
 
   writeVarint(data.size());
   write(data);
+
+  flush();
 }
 
 auto MTrk::control(uint4 channel, uint7 control) -> maybe<uint7> {
@@ -168,6 +179,8 @@ auto MTrk::noteOff(uint4 channel, uint7 note, uint7 velocity) -> void {
   write(0x80 | channel);
   write(note);
   write(velocity);
+
+  flush();
 }
 
 auto MTrk::noteOn(uint4 channel, uint7 note, uint7 velocity) -> void {
@@ -175,6 +188,8 @@ auto MTrk::noteOn(uint4 channel, uint7 note, uint7 velocity) -> void {
   write(0x90 | channel);
   write(note);
   write(velocity);
+
+  flush();
 }
 
 auto MTrk::keyPressureChange(uint4 channel, uint7 note, uint7 velocity) -> void {
@@ -182,6 +197,8 @@ auto MTrk::keyPressureChange(uint4 channel, uint7 note, uint7 velocity) -> void 
   write(0xA0 | channel);
   write(note);
   write(velocity);
+
+  flush();
 }
 
 auto MTrk::controlChange(uint4 channel, uint7 control, uint7 value) -> void {
@@ -192,6 +209,8 @@ auto MTrk::controlChange(uint4 channel, uint7 control, uint7 value) -> void {
   write(0xB0 | channel);
   write(control);
   write(value);
+
+  flush();
 
   file.channels[channel].control[control] = value;
 }
@@ -204,6 +223,8 @@ auto MTrk::programChange(uint4 channel, uint7 program) -> void {
   write(0xC0 | channel);
   write(program);
 
+  flush();
+
   file.channels[channel].program = program;
 }
 
@@ -211,6 +232,8 @@ auto MTrk::channelPressureChange(uint4 channel, uint7 velocity) -> void {
   writeTickDelta();
   write(0xD0 | channel);
   write(velocity);
+
+  flush();
 }
 
 auto MTrk::pitchBendChange(uint4 channel, uint14 pitchBend) -> void {
@@ -221,6 +244,8 @@ auto MTrk::pitchBendChange(uint4 channel, uint14 pitchBend) -> void {
   write(0xE0 | channel);
   write(pitchBend & 0x7F);
   write((pitchBend >> 7) & 0x7F);
+
+  flush();
 
   file.channels[channel].pitchBend = pitchBend;
 }
