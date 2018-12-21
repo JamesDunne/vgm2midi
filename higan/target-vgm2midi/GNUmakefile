@@ -16,14 +16,6 @@ obj/ui-resource.o: $(ui)/resource/resource.cpp
 all: $(objects)
 	$(info Linking out/$(name) ...)
 	+@$(compiler) -o out/$(name) $(objects) $(options)
-ifeq ($(platform),macos)
-	# rm -rf out/$(name).app
-	# mkdir -p out/$(name).app/Contents/MacOS/
-	# mkdir -p out/$(name).app/Contents/Resources/
-	# mv out/$(name) out/$(name).app/Contents/MacOS/$(name)
-	# cp $(ui)/resource/$(name).plist out/$(name).app/Contents/Info.plist
-	# sips -s format icns $(ui)/resource/$(name).png --out out/$(name).app/Contents/Resources/$(name).icns
-endif
 
 verbose: nall.verbose all;
 
