@@ -4,7 +4,7 @@ auto APU::Envelope::volume() const -> uint {
 
 auto APU::Envelope::clock() -> void {
   if(reloadDecay) {
-    midiTrigger = true;
+    if (!useSpeedAsVolume) midiTrigger = true;
     reloadDecay = false;
     decayVolume = 0x0f;
     decayCounter = speed + 1;

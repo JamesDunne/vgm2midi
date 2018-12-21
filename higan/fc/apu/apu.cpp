@@ -159,6 +159,8 @@ auto APU::readIO(uint16 addr) -> uint8 {
 }
 
 auto APU::writeIO(uint16 addr, uint8 data) -> void {
+  const auto metaEventKind = 0x04;
+
   const uint n = (addr >> 2) & 1;  //pulse#
 
   switch(addr) {
@@ -169,6 +171,11 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     pulse[n].envelope.useSpeedAsVolume = data & 0x10;
     pulse[n].envelope.speed = data & 0x0f;
     pulse[n].written = cyclesPerMidiTick;
+    pulse[n].midi->channelPrefixMeta(
+      pulse[n].midiChannel(),
+      metaEventKind,
+      string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+    );
     return;
   }
 
@@ -179,6 +186,11 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     pulse[n].sweep.shift = data & 0x07;
     pulse[n].sweep.reload = true;
     pulse[n].written = cyclesPerMidiTick;
+    pulse[n].midi->channelPrefixMeta(
+      pulse[n].midiChannel(),
+      metaEventKind,
+      string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+    );
     return;
   }
 
@@ -187,6 +199,11 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     pulse[n].sweep.pulsePeriod = (pulse[n].sweep.pulsePeriod & 0x0700) | (data << 0);
     pulse[n].midiTriggerMaybe = true;
     pulse[n].written = cyclesPerMidiTick;
+    pulse[n].midi->channelPrefixMeta(
+      pulse[n].midiChannel(),
+      metaEventKind,
+      string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+    );
     return;
   }
 
@@ -195,13 +212,18 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     pulse[n].sweep.pulsePeriod = (pulse[n].sweep.pulsePeriod & 0x00ff) | (data << 8);
 
     pulse[n].dutyCounter = 0;
-    pulse[n].midiTrigger = true;
+    // pulse[n].midiTrigger = true;
     pulse[n].envelope.reloadDecay = true;
     pulse[n].written = cyclesPerMidiTick;
 
     if(enabledChannels & (1 << n)) {
       pulse[n].lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
     }
+    pulse[n].midi->channelPrefixMeta(
+      pulse[n].midiChannel(),
+      metaEventKind,
+      string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+    );
     return;
   }
 
@@ -292,6 +314,11 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
 
     setIRQ();
     enabledChannels = data & 0x1f;
+
+    pulse[0].midi->meta(
+      metaEventKind,
+      string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+    );
     return;
   }
 
@@ -305,6 +332,11 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
       setIRQ();
     }
     frame.divider = FrameCounter::NtscPeriod;
+
+    pulse[0].midi->meta(
+      metaEventKind,
+      string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+    );
     return;
   }
 

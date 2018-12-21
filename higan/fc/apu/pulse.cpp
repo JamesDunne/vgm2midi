@@ -8,11 +8,25 @@ auto APU::Pulse::clock() -> uint8 {
   if(written) written--;
 
   if(!sweep.checkPeriod()) {
-    midiNoteOff();
+    if (written == 0 && lastMidiNote) {
+      midi->channelPrefixMeta(
+        midiChannel(),
+        0x04,
+        string("pulse[{0}]: !sweep.checkPeriod()").format(string_format{n})
+      );
+      midiNoteOff();
+    }
     return 0;
   }
   if(lengthCounter == 0) {
-    midiNoteOff();
+    if (written == 0 && lastMidiNote) {
+      midi->channelPrefixMeta(
+        midiChannel(),
+        0x04,
+        string("pulse[{0}]: lengthCounter == 0").format(string_format{n})
+      );
+      midiNoteOff();
+    }
     return 0;
   }
 
@@ -26,29 +40,44 @@ auto APU::Pulse::clock() -> uint8 {
   auto volume = envelope.volume();
   uint8 result = dutyTable[duty][dutyCounter] ? volume : 0;
   if(sweep.pulsePeriod < 0x008) {
-    midiNoteOff();
+    if (written == 0 && lastMidiNote) {
+      midi->channelPrefixMeta(
+        midiChannel(),
+        0x04,
+        string("pulse[{0}]: sweep.pulsePeriod < 0x008").format(string_format{n})
+      );
+      midiNoteOff();
+    }
     result = 0;
   } else if (written == 0) {
     if (volume > 0) {
       bool trigger = midiTrigger || envelope.midiTrigger;
+      if (envelope.midiTrigger) envelope.midiTrigger = false;
+      if (midiTrigger) midiTrigger = false;
+
       if (!trigger && midiTriggerMaybe && !lastMidiNote) {
         trigger = true;
+        midiTriggerMaybe = false;
       }
       if (!trigger && duty != lastDuty) {
         trigger = true;
       }
 
       if (trigger) {
-        if (envelope.midiTrigger) envelope.midiTrigger = false;
-        if (midiTrigger) midiTrigger = false;
-
         midiNoteOn();
       }
 
       midiNoteContinue();
       lastDuty = duty;
     } else {
-      midiNoteOff();
+      if (written == 0 && lastMidiNote) {
+        midi->channelPrefixMeta(
+          midiChannel(),
+          0x04,
+          string("pulse[{0}]: volume == 0").format(string_format{n})
+        );
+        midiNoteOff();
+      }
     }
   }
 

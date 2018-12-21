@@ -27,6 +27,15 @@ struct MIDIDevice {
 
   virtual auto meta(uint7 event, const array_view<uint8_t> data) -> void {};
 
+  virtual auto channelPrefixMeta(uint4 channel, uint7 event, const array_view<uint8_t> data) -> void {
+    // MIDI Channel prefix:
+    vector<uint8_t> mcp;
+    mcp.appendm(channel, 1);
+    meta(0x20, mcp);
+    // Meta event:
+    meta(event, data);
+  };
+
   virtual auto tick() -> midi_tick_t const = 0;
 
   struct Null;
