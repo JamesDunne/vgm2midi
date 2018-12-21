@@ -239,6 +239,14 @@ struct APU : Thread {
 
   auto loadMidiSupport(Markup::Node document) -> void;
 
+  struct {
+    bool pulse[2];
+    bool triangle;
+    bool noise;
+    bool dmc;
+    bool control;
+  } emitEvents;
+
   static const uint8 lengthCounterTable[32];
   static const uint16 dmcPeriodTableNTSC[16];
   static const uint16 dmcPeriodTablePAL[16];

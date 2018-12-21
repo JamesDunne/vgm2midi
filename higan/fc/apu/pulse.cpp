@@ -9,22 +9,26 @@ auto APU::Pulse::clock() -> uint8 {
 
   if(!sweep.checkPeriod()) {
     if (written == 0 && lastMidiNote) {
-      midi->channelPrefixMeta(
-        midiChannel(),
-        0x04,
-        string("pulse[{0}]: !sweep.checkPeriod()").format(string_format{n})
-      );
+      if (apu.emitEvents.pulse[n]) {
+        midi->channelPrefixMeta(
+          midiChannel(),
+          0x04,
+          string("pulse[{0}]: !sweep.checkPeriod()").format(string_format{n})
+        );
+      }
       midiNoteOff();
     }
     return 0;
   }
   if(lengthCounter == 0) {
     if (written == 0 && lastMidiNote) {
-      midi->channelPrefixMeta(
-        midiChannel(),
-        0x04,
-        string("pulse[{0}]: lengthCounter == 0").format(string_format{n})
-      );
+      if (apu.emitEvents.pulse[n]) {
+        midi->channelPrefixMeta(
+          midiChannel(),
+          0x04,
+          string("pulse[{0}]: lengthCounter == 0").format(string_format{n})
+        );
+      }
       midiNoteOff();
     }
     return 0;
@@ -41,11 +45,13 @@ auto APU::Pulse::clock() -> uint8 {
   uint8 result = dutyTable[duty][dutyCounter] ? volume : 0;
   if(sweep.pulsePeriod < 0x008) {
     if (written == 0 && lastMidiNote) {
-      midi->channelPrefixMeta(
-        midiChannel(),
-        0x04,
-        string("pulse[{0}]: sweep.pulsePeriod < 0x008").format(string_format{n})
-      );
+      if (apu.emitEvents.pulse[n]) {
+        midi->channelPrefixMeta(
+          midiChannel(),
+          0x04,
+          string("pulse[{0}]: sweep.pulsePeriod < 0x008").format(string_format{n})
+        );
+      }
       midiNoteOff();
     }
     result = 0;
@@ -71,11 +77,13 @@ auto APU::Pulse::clock() -> uint8 {
       lastDuty = duty;
     } else {
       if (written == 0 && lastMidiNote) {
-        midi->channelPrefixMeta(
-          midiChannel(),
-          0x04,
-          string("pulse[{0}]: volume == 0").format(string_format{n})
-        );
+        if (apu.emitEvents.pulse[n]) {
+          midi->channelPrefixMeta(
+            midiChannel(),
+            0x04,
+            string("pulse[{0}]: volume == 0").format(string_format{n})
+          );
+        }
         midiNoteOff();
       }
     }

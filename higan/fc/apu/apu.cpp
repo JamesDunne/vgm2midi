@@ -42,6 +42,16 @@ APU::APU() {
 
   triangleMIDI = (uint7)(127 * log2(1 + pow(4.0 * dmcTriangleNoiseDAC[0][3][0], 0.75)));
   dmcMIDI = (uint7)(127 * log2(1 + pow(4.0 * dmcTriangleNoiseDAC[12][0][0], 0.75)));
+
+  emitEvents.pulse[0] = false;
+  emitEvents.pulse[1] = false;
+  emitEvents.triangle = false;
+  emitEvents.noise = false;
+  emitEvents.dmc = false;
+  emitEvents.control = false;
+
+  pulse[0].n = 0;
+  pulse[1].n = 1;
 }
 
 auto APU::Enter() -> void {
@@ -96,9 +106,6 @@ auto APU::power(bool reset) -> void {
   stream->enableFilterDCOffset();
 
   sampleRate = (frequency() / rate());
-
-  pulse[0].n = 0;
-  pulse[1].n = 1;
 
   pulse[0].power();
   pulse[1].power();
@@ -171,11 +178,13 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     pulse[n].envelope.useSpeedAsVolume = data & 0x10;
     pulse[n].envelope.speed = data & 0x0f;
     pulse[n].written = cyclesPerMidiTick;
-    pulse[n].midi->channelPrefixMeta(
-      pulse[n].midiChannel(),
-      metaEventKind,
-      string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
-    );
+    if (emitEvents.pulse[n]) {
+      pulse[n].midi->channelPrefixMeta(
+        pulse[n].midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
@@ -186,11 +195,13 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     pulse[n].sweep.shift = data & 0x07;
     pulse[n].sweep.reload = true;
     pulse[n].written = cyclesPerMidiTick;
-    pulse[n].midi->channelPrefixMeta(
-      pulse[n].midiChannel(),
-      metaEventKind,
-      string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
-    );
+    if (emitEvents.pulse[n]) {
+      pulse[n].midi->channelPrefixMeta(
+        pulse[n].midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
@@ -199,11 +210,13 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     pulse[n].sweep.pulsePeriod = (pulse[n].sweep.pulsePeriod & 0x0700) | (data << 0);
     pulse[n].midiTriggerMaybe = true;
     pulse[n].written = cyclesPerMidiTick;
-    pulse[n].midi->channelPrefixMeta(
-      pulse[n].midiChannel(),
-      metaEventKind,
-      string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
-    );
+    if (emitEvents.pulse[n]) {
+      pulse[n].midi->channelPrefixMeta(
+        pulse[n].midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
@@ -219,11 +232,13 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     if(enabledChannels & (1 << n)) {
       pulse[n].lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
     }
-    pulse[n].midi->channelPrefixMeta(
-      pulse[n].midiChannel(),
-      metaEventKind,
-      string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
-    );
+    if (emitEvents.pulse[n]) {
+      pulse[n].midi->channelPrefixMeta(
+        pulse[n].midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
@@ -231,12 +246,26 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     triangle.haltLengthCounter = data & 0x80;
     triangle.linearLength = data & 0x7f;
     triangle.written = cyclesPerMidiTick;
+    if (emitEvents.triangle) {
+      triangle.midi->channelPrefixMeta(
+        triangle.midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
   case 0x400a: {
     triangle.period = (triangle.period & 0x0700) | (data << 0);
     triangle.written = cyclesPerMidiTick;
+    if (emitEvents.triangle) {
+      triangle.midi->channelPrefixMeta(
+        triangle.midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
@@ -250,6 +279,14 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
       triangle.lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
       triangle.midiTrigger = true;
     }
+
+    if (emitEvents.triangle) {
+      triangle.midi->channelPrefixMeta(
+        triangle.midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
@@ -258,6 +295,13 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     noise.envelope.useSpeedAsVolume = data & 0x10;
     noise.envelope.speed = data & 0x0f;
     noise.written = cyclesPerMidiTick;
+    if (emitEvents.noise) {
+      noise.midi->channelPrefixMeta(
+        noise.midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
@@ -265,6 +309,13 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     noise.shortMode = data & 0x80;
     noise.period = data & 0x0f;
     noise.written = cyclesPerMidiTick;
+    if (emitEvents.noise) {
+      noise.midi->channelPrefixMeta(
+        noise.midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
@@ -275,6 +326,14 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     if(enabledChannels & (1 << 3)) {
       noise.lengthCounter = lengthCounterTable[(data >> 3) & 0x1f];
     }
+
+    if (emitEvents.noise) {
+      noise.midi->channelPrefixMeta(
+        noise.midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
@@ -284,22 +343,52 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     dmc.period = data & 0x0f;
 
     dmc.irqPending = dmc.irqPending && dmc.irqEnable && !dmc.loopMode;
+
+    if (emitEvents.dmc) {
+      dmc.midi->channelPrefixMeta(
+        dmc.midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
+
     setIRQ();
     return;
   }
 
   case 0x4011: {
     dmc.dacLatch = data & 0x7f;
+    if (emitEvents.dmc) {
+      dmc.midi->channelPrefixMeta(
+        dmc.midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
   case 0x4012: {
     dmc.addrLatch = data;
+    if (emitEvents.dmc) {
+      dmc.midi->channelPrefixMeta(
+        dmc.midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
   case 0x4013: {
     dmc.lengthLatch = data;
+    if (emitEvents.dmc) {
+      dmc.midi->channelPrefixMeta(
+        dmc.midiChannel(),
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
@@ -315,10 +404,12 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     setIRQ();
     enabledChannels = data & 0x1f;
 
-    pulse[0].midi->meta(
-      metaEventKind,
-      string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
-    );
+    if (emitEvents.control) {
+      dmc.midi->meta(
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
@@ -333,10 +424,12 @@ auto APU::writeIO(uint16 addr, uint8 data) -> void {
     }
     frame.divider = FrameCounter::NtscPeriod;
 
-    pulse[0].midi->meta(
-      metaEventKind,
-      string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
-    );
+    if (emitEvents.control) {
+      dmc.midi->meta(
+        metaEventKind,
+        string("[{0}]={1}").format(string_format{hex(addr&0x1f,2),hex(data,2)})
+      );
+    }
     return;
   }
 
@@ -444,6 +537,16 @@ auto APU::loadMidiSupport(Markup::Node document) -> void {
     if (nr["period"]) {
       tm().periodMidiNote.insert(nr["period"].natural(), midiNote);
     }
+  }
+
+  // Let the user control the emitting of meta-events to MIDI:
+  if (auto eventsNode = document["events"]) {
+    emitEvents.pulse[0] = (bool)eventsNode["pulse0"];
+    emitEvents.pulse[1] = (bool)eventsNode["pulse1"];
+    emitEvents.triangle = (bool)eventsNode["triangle"];
+    emitEvents.noise = (bool)eventsNode["noise"];
+    emitEvents.dmc = (bool)eventsNode["dmc"];
+    emitEvents.control = (bool)eventsNode["control"];
   }
 }
 
