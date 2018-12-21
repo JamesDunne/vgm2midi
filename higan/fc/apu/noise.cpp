@@ -79,8 +79,8 @@ auto APU::Noise::power() -> void {
   midi = platform->createMIDITrack();
 
   written = 0;
-  lastEnvelopeDirection = 0;
-  lastEnvelopeVolume = 0;
+  lastEnvelopeVolume = 16;
+  lastEnvelopeDirection = 1;
 }
 
 auto APU::Noise::midiNote() -> double {
