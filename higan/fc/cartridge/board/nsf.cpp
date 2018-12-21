@@ -43,6 +43,14 @@ NSF::NSF(Markup::Node& document) : Board(document) {
     }
   }
 
+  // Create CHR RAM:
+  chrram.size = 0x0800;
+  chrram.data = new uint8_t[chrram.size]();
+  chrram.writable = true;
+  for (auto x : range(chrram.size)) {
+    chrram.data[x] = 0x00;
+  }
+
   // for (int x=0; x < 0x30+6; x++) {
   //   print("{0}\n", string_format(hex(NSFROM[x],2)));
   // }
@@ -165,22 +173,24 @@ auto NSF::writePRGforced(uint addr) -> bool {
 
 // Appears to be unused by NSF player.
 auto NSF::readCHR(uint addr) -> uint8 {
-#if DEBUG_NSF
+// #if DEBUG_NSF
   print("NSF read  CHR 0x{0}\n", string_format{hex(addr,4)});
-#endif
+// #endif
   if(addr & 0x2000) {
     if(settings.mirror == 0) addr = ((addr & 0x0800) >> 1) | (addr & 0x03ff);
     return ppu.readCIRAM(addr & 0x07ff);
   }
   if(chrram.size) return chrram.read(addr);
-  return chrrom.read(addr);
+  if(chrrom.size) return chrrom.read(addr);
+  // Simulate open bus:
+  return addr >> 8;
 }
 
 // Appears to be unused by NSF player.
 auto NSF::writeCHR(uint addr, uint8 data) -> void {
-#if DEBUG_NSF
+// #if DEBUG_NSF
   print("NSF write CHR 0x{0} = 0x{1}\n", string_format{hex(addr,4), hex(data,2)});
-#endif
+// #endif
   if(addr & 0x2000) {
     if(settings.mirror == 0) addr = ((addr & 0x0800) >> 1) | (addr & 0x03ff);
     return ppu.writeCIRAM(addr & 0x07ff, data);
