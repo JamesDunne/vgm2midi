@@ -24,7 +24,7 @@ struct NSFPlayer : Emulator::Platform {
 	Famicom::Scheduler* scheduler;
 	Famicom::NSF* nsf;
 
-	MIDIFile midiFile;
+	MIDIFile *midiFile;
 
 	// Emulator::Platform
 	auto path(uint id) -> string override;
@@ -104,19 +104,39 @@ auto NSFPlayer::notify(string text) -> void {
 }
 
 auto NSFPlayer::advanceMIDITicks(midi_tick_t ticks) -> void {
-	midiFile.advanceTicks(ticks);
+	midiFile->advanceTicks(ticks);
 }
 auto NSFPlayer::createMIDITrack() -> shared_pointer<MIDIDevice> {
-	return midiFile.createTrack();
+	return midiFile->createTrack();
 }
 
 auto NSFPlayer::run(string filename, Arguments arguments) -> void {
-	// Track number (0-based):
+	// Track number (1-based):
 	auto track_s = arguments.take();
 	if (!track_s) {
-		track_s = "0";
+		track_s = "1";
 	}
-	auto track = track_s.natural();
+	auto track = track_s.natural() - 1;
+
+	// Play seconds:
+	auto play_s = arguments.take();
+	if (!play_s) {
+		play_s = string("{0}").format(3 * 60 + 10);
+	}
+	auto play_seconds = play_s.natural();
+
+	// const long play_seconds = 0 * 60 + 58;
+	// const long play_seconds = 1 * 60 + 53;
+	// const long play_seconds = 3 * 60 + 10;
+	// const long play_seconds = 2 * 60 + 30;
+
+	auto midi_fmt_s = arguments.take();
+	if (!midi_fmt_s) {
+		midi_fmt_s = "1";
+	}
+	auto midi_fmt = midi_fmt_s.natural();
+
+	if (midi_fmt > 1) midi_fmt = 1;
 
 	auto buf = file::open(filename, file::mode::read);
 	if (buf.reads(5) != "NESM\x1A") {
@@ -230,6 +250,17 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	Emulator::audio.setVolume(1.0);
 	Emulator::audio.setBalance(0.0);
 
+	auto supFilename = string(filename);
+	supFilename = supFilename.trimRight(".nsf").append(".v2m");
+	auto wavFilename = string(filename);
+	wavFilename = wavFilename.trimRight(".nsf").append(".{0}", string_format{track+1}).append(".wav");
+
+	auto midiFilename = string(filename);
+	midiFilename = midiFilename.trimRight(".nsf").append(".{0}", string_format{track+1}).append(".mid");
+
+	auto midFile = file::open(midiFilename, file::mode::write);
+	midiFile = new MIDIFile(midFile, midi_fmt);
+
 	nes = new Famicom::Interface;
 	// print("nes->load()\n");
 	if (!nes->load()) {
@@ -253,12 +284,13 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 
 	nsf->song_index = track;
 
-	auto supFilename = filename.trimRight(".nsf").append(".v2m");
-	// print(supFilename, "\n");
 	auto sup = file::open(supFilename, file::mode::read);
     auto supDocument = sup.reads(sup.size());
 	sup.close();
+
 	apu->loadMidiSupport(BML::unserialize(supDocument));
+
+	midiFile->writeHeader();
 
 	// Clear RAM to 00:
 	for (auto& data : cpu->ram) data = 0x00;
@@ -277,15 +309,10 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 
 	const int header_size = 0x2C;
 
-	wave = file::open("out.wav", file::mode::write);
+	wave = file::open(wavFilename, file::mode::write);
 	wave.truncate(header_size);
 	wave.seek(header_size);
 	samples = 0;
-
-	const long play_seconds = 0 * 60 + 58;
-	// const long play_seconds = 1 * 60 + 53;
-	// const long play_seconds = 3 * 60 + 10;
-	// const long play_seconds = 2 * 60 + 30;
 
 	int plays = 0;
 	int seconds = 0;
@@ -354,5 +381,5 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 	wave.close();
 
 	// Save MIDI output:
-	midiFile.save("out.mid");
+	midiFile->save();
 }

@@ -34,19 +34,32 @@ private:
 
   auto advanceTicks(midi_tick_t ticks) -> void;
 
+  auto write(uint8_t data) -> void;
+  auto write(array_view<uint8_t> memory) -> void;
+
   friend struct MIDIFile;
 };
 
 struct MIDIFile : MIDITiming {
-  MIDIFile() {
+  MIDIFile(file_buffer& file_, int midiFormat_ = 1) : midiFormat(midiFormat_), file(file_) {
+    // file = file_;
     tick_abs = 0;
+    if (midiFormat == 0) {
+      tracks.append(new MTrk(*this));
+    }
+    mtrk0LengthOffset = 0;
   }
 
+  file_buffer& file;
+  const int midiFormat;
   vector<MTrk*> tracks;
+  uint64_t mtrk0LengthOffset;
 
   auto createTrack() -> shared_pointer<MTrk>;
 
-  auto save(string path) -> void const;
+  auto writeHeader() -> void const;
+  auto updateHeader() -> void const;
+  auto save() -> void const;
 
   virtual auto advanceTicks(midi_tick_t ticks) -> void override;
   virtual auto tick() -> midi_tick_t const override;
