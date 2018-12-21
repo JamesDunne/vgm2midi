@@ -52,7 +52,7 @@ struct MIDIFile : MIDITiming {
 
   file_buffer& file;
   const int midiFormat;
-  vector<MTrk*> tracks;
+  vector<shared_pointer<MTrk>> tracks;
   uint64_t mtrk0LengthOffset;
 
   auto createTrack() -> shared_pointer<MTrk>;
