@@ -12,8 +12,7 @@ struct NSFPlayer : Emulator::Platform {
 	vector<uint8_t> prgrom;
 
 	// WAVE file writing out:
-	file_buffer wave;
-	long samples;
+	WaveFile *waveFile;
 
 	Famicom::Interface* nes;
 
@@ -86,10 +85,7 @@ auto NSFPlayer::audioSample(const double* samples, uint channels) -> void {
 	// For NSF:
 	assert(channels == 1);
 
-	// Write 32-bit sample:
-	auto x = (float)samples[0];
-	wave.write({&x, 4});
-	this->samples++;
+	waveFile->writeSamples(samples);
 }
 auto NSFPlayer::inputPoll(uint port, uint device, uint input) -> int16 {
 	print("inputPoll\n");
@@ -309,10 +305,9 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 
 	const int header_size = 0x2C;
 
-	wave = file::open(wavFilename, file::mode::write);
-	wave.truncate(header_size);
-	wave.seek(header_size);
-	samples = 0;
+	auto wave = file::open(wavFilename, file::mode::write);
+	waveFile = new WaveFile(wave, 1, 48000);
+	waveFile->writeHeader();
 
 	int plays = 0;
 	int seconds = 0;
@@ -340,43 +335,15 @@ auto NSFPlayer::run(string filename, Arguments arguments) -> void {
 				seconds++;
 				plays = 0;
 				print("\b\b\b\b\b\b\b\b\b\b\b\rtime: {0}:{1}", string_format{pad(seconds / 60, 2, '0'), pad(seconds % 60, 2, '0')});
+
+				midiFile->updateHeader();
+				waveFile->updateHeader();
 			}
 		}
 	} while (seconds < play_seconds);
 	print("\n");
 
-	// Write WAVE headers:
-	long chan_count = 1;
-	long rate = 48000;
-	long ds = samples * sizeof (float);
-	long rs = header_size - 8 + ds;
-	int frame_size = chan_count * sizeof (float);
-	long bps = rate * frame_size;
-
-	unsigned char header [header_size] =
-	{
-		'R','I','F','F',
-		rs,rs>>8,           // length of rest of file
-		rs>>16,rs>>24,
-		'W','A','V','E',
-		'f','m','t',' ',
-		0x10,0,0,0,         // size of fmt chunk
-		// 1,0,                // PCM format
-		3,0,				// float format
-		chan_count,0,       // channel count
-		rate,rate >> 8,     // sample rate
-		rate>>16,rate>>24,
-		bps,bps>>8,         // bytes per second
-		bps>>16,bps>>24,
-		frame_size,0,       // bytes per sample frame
-		32,0,               // bits per sample
-		'd','a','t','a',
-		ds,ds>>8,ds>>16,ds>>24// size of sample data
-		// ...              // sample data
-	};
-
-	wave.seek(0);
-	wave.write({header, header_size});
+	waveFile->updateHeader();
 
 	wave.close();
 

@@ -88,12 +88,12 @@ auto MTrk::write(array_view<uint8_t> memory) -> void {
 }
 
 auto MTrk::flush() -> void {
-  if (file.midiFormat == 0) {
-    if (++flushCount == 100) {
-      file.updateHeader();
-      flushCount = 0;
-    }
-  }
+  // if (file.midiFormat == 0) {
+  //   if (++flushCount == 100) {
+  //     file.updateHeader();
+  //     flushCount = 0;
+  //   }
+  // }
 }
 
 

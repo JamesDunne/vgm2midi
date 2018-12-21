@@ -11,6 +11,7 @@ using namespace nall;
 extern Emulator::Interface* emulator;
 
 #include "midi.hpp"
+#include "wave.hpp"
 
 // #include "program/program.hpp"
 // #include "input/input.hpp"
