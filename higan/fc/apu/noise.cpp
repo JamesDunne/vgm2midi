@@ -8,42 +8,20 @@ auto APU::Noise::clock() -> uint8 {
   if(written) written--;
 
   if(lengthCounter == 0) {
-    if (written == 0 && lastMidiNote) midiNoteOff();
+    if ( /* written == 0 && */ lastMidiNote) midiNoteOff();
     return 0;
   }
 
   auto volume = envelope.volume();
   uint8 result = (lfsr & 1) ? volume : 0;
 
-  if (written == 0) {
-    if (volume > 0) {
-      if (envelope.midiTrigger) {
-        envelope.midiTrigger = false;
-        bool trigger = false;
-        if (lastMidiNote && midiNote() != lastMidiNote()) {
-          lastEnvelopeVolume = 16;
-          lastEnvelopeDirection = 1;
-        }
-
-        int envelopeDirection = volume - lastEnvelopeVolume;
-        if (lastEnvelopeDirection > 0 && envelopeDirection < 0) {
-          trigger = true;
-        }
-
-        if (trigger) {
-          midiNoteOn();
-        }
-
-        midiNoteContinue();
-        lastEnvelopeDirection = volume - lastEnvelopeVolume;
-        lastEnvelopeVolume = volume;
-      }
-    } else {
-      if (lastMidiNote) midiNoteOff();
-      lastEnvelopeVolume = 16;
-      lastEnvelopeDirection = 1;
-    }
+  if (volume != lastEnvelopeVolume) {
+    if (!lastMidiNote) midiNoteOn();
+  } else if (lastMidiNote) {
+    if (midiNote() != lastMidiNote()) midiNoteOn();
+    // else midiNoteOff();
   }
+  lastEnvelopeVolume = volume;
 
   if(--periodCounter == 0) {
     uint feedback;
@@ -79,7 +57,7 @@ auto APU::Noise::power() -> void {
   midi = platform->createMIDITrack();
 
   written = 0;
-  lastEnvelopeVolume = 16;
+  lastEnvelopeVolume = 0;
   lastEnvelopeDirection = 1;
 }
 

@@ -40,7 +40,7 @@ APU::APU() {
     noiseMIDI[noise_amp] = (uint7)(127 * log2(1 + pow(4.0 * dmcTriangleNoiseDAC[0][0][noise_amp], 0.75)));
   }
 
-  triangleMIDI = (uint7)(127 * log2(1 + pow(4.0 * dmcTriangleNoiseDAC[0][3][0], 0.75)));
+  triangleMIDI = (uint7)(127 * log2(1 + pow(4.0 * dmcTriangleNoiseDAC[0][7][0], 0.75)));
   dmcMIDI = (uint7)(127 * log2(1 + pow(4.0 * dmcTriangleNoiseDAC[12][0][0], 0.75)));
 
   emitEvents.pulse[0] = false;

@@ -15,7 +15,7 @@ auto MIDIMelodic::midiNoteOn() -> void {
   // Rate limit note on of the same note:
   if (lastMidiNote && lastMidiChannel
     && (lastMidiChannel() == newMidiChannel)
-    && ((round(lastMidiNote()) == m) && (midi->tick() - lastMidiNoteTick() < 0x30))
+    && ((round(lastMidiNote()) == m) && (midi->tick() - lastMidiNoteTick() < 0x10))
   ) {
     return;
   }
