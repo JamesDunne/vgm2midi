@@ -23,7 +23,8 @@ struct MIDIMelodic : MIDIInstrument {
   virtual auto midiNoteContinue() -> void override;
   virtual auto midiNoteOff() -> void override;
 
-  maybe<double> lastMidiNote;
+  maybe<double> lastMidiNote; // last started midi note pitch
+  maybe<double> lastPitch;    // last wheel-adjusted pitch
   maybe<midi_tick_t> lastMidiNoteTick;
   maybe<uint4> lastMidiChannel;
 };

@@ -2,7 +2,7 @@
 auto MIDIMelodic::midiNoteOff() -> void {
   if (!lastMidiNote || !lastMidiChannel) return;
 
-  midi->noteOff(lastMidiChannel(), lastMidiNote(), 0);
+  midi->noteOff(lastMidiChannel(), round(lastMidiNote()), 0);
 
   lastMidiNote = nothing;
 }
@@ -15,7 +15,7 @@ auto MIDIMelodic::midiNoteOn() -> void {
   // Rate limit note on of the same note:
   if (lastMidiNote && lastMidiChannel
     && (lastMidiChannel() == newMidiChannel)
-    && ((lastMidiNote() == m) && (midi->tick() - lastMidiNoteTick() < 0x30))
+    && ((round(lastMidiNote()) == m) && (midi->tick() - lastMidiNoteTick() < 0x30))
   ) {
     return;
   }
@@ -34,13 +34,15 @@ auto MIDIMelodic::midiNoteOn() -> void {
   if (newMidiChannel != 9) {
     // Reset pitch bend if within a tolerance of a concert pitch:
     auto pitchDiff = abs(n - m);
+    auto newPitchBend = midiPitchBend(n, m);
     if (pitchDiff < 0.0625) {
       // Reset pitch bend to 0:
-      midi->pitchBendChange(newMidiChannel, 0x2000);
+      newPitchBend = 0x2000;
+      lastPitch = m;
     } else {
-      auto newPitchBend = midiPitchBend(n, m);
-      midi->pitchBendChange(newMidiChannel, newPitchBend);
+      lastPitch = n;
     }
+    midi->pitchBendChange(newMidiChannel, newPitchBend);
   }
 
   // Change program:
@@ -51,7 +53,7 @@ auto MIDIMelodic::midiNoteOn() -> void {
 
   lastMidiNoteTick = midi->tick();
   lastMidiChannel = newMidiChannel;
-  lastMidiNote = m;
+  lastMidiNote = n;
 }
 
 auto MIDIMelodic::midiNoteContinue() -> void {
@@ -65,17 +67,18 @@ auto MIDIMelodic::midiNoteContinue() -> void {
   // Update pitch wheel:
   if (lastMidiChannel() != 9) {
     auto n = midiNote();
-    auto m = lastMidiNote();
+    auto m = round(lastMidiNote());
+    auto wheel = abs(n - m);
+    auto wheelDiff = abs(lastPitch() - n);
 
-    // Period is changing too finely for MIDI note to change:
-    auto pitchDiff = abs(n - m);
-    if (pitchDiff >= 0.0625 && pitchDiff < 0.8) {
-      // Emit pitch wheel change:
+    // Start a new note if pitch went too far out of range:
+    if (wheel >= 2.0 || wheelDiff > 1.0) {
+      midiNoteOn();
+    } else if (wheelDiff >= 0.0625) {
+      // Adjust pitch wheel:
       auto newPitchBend = midiPitchBend(n, m);
       midi->pitchBendChange(lastMidiChannel(), newPitchBend);
-    } else if (pitchDiff >= 0.8) {
-      // Too far outside bend range so start a new note:
-      midiNoteOn();
+      lastPitch = n;
     }
   }
 }
